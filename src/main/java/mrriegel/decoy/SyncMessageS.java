@@ -17,8 +17,8 @@ public class SyncMessageS implements IMessage {
 	public SyncMessageS() {
 	}
 
-	public SyncMessageS(TileEntity t) {
-		this.nbt = t.serializeNBT();
+	public SyncMessageS(TileDispatcher t) {
+		this.nbt = t.serializeTransfers();
 		this.pos = t.getPos();
 	}
 
@@ -41,8 +41,8 @@ public class SyncMessageS implements IMessage {
 			ctx.getServerHandler().playerEntity.getServerWorld().addScheduledTask(new Runnable() {
 				@Override
 				public void run() {
-					TileEntity t = ctx.getServerHandler().playerEntity.getServerWorld().getTileEntity(message.pos);
-					t.deserializeNBT(message.nbt);
+					TileDispatcher t = (TileDispatcher) ctx.getServerHandler().playerEntity.getServerWorld().getTileEntity(message.pos);
+					t.deserializeTransfers(message.nbt);
 				}
 			});
 			return null;

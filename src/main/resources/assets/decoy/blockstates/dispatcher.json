@@ -1,0 +1,45 @@
+{
+    "forge_marker":1,
+    "defaults":{
+        "model":"decoy:dispatcher",
+        "textures":{
+            "particle":"blocks/hardened_clay_stained_black",
+            "body":"blocks/hardened_clay_stained_black",
+            "line":"blocks/wool_colored_orange",
+            "pile":"blocks/emerald_block"
+        }
+    },
+    "variants":{
+        "normal":[{
+                
+            }],
+        "inventory":[{
+                "transform":"forge:default-block",
+                "y":90
+            }],
+        "facing":{
+            "east":{
+                "y":90,
+                "x":270
+            },
+            "west":{
+                "y":270,
+                "x":270
+            },
+            "north":{
+                "y":180,
+                "x":90
+            },
+            "south":{
+                "y":180,
+                "x":270
+            },
+            "down":{
+                
+            },
+            "up":{
+                "x":180
+            }
+        }
+    }
+}

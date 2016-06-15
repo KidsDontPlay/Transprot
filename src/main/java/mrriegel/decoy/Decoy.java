@@ -1,6 +1,8 @@
 package mrriegel.decoy;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -21,6 +23,8 @@ public class Decoy {
 	public static final SimpleNetworkWrapper DISPATCHER = new SimpleNetworkWrapper(MODID);
 
 	public static final Block dispatcher = new BlockDispatcher();
+	
+	public static final Item linker=new ItemLinker();
 
 	@SidedProxy(clientSide = "mrriegel.decoy.ClientProxy", serverSide = "mrriegel.decoy.CommonProxy")
 	public static CommonProxy proxy;
@@ -39,6 +43,7 @@ public class Decoy {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		proxy.postInit(event);
+		System.out.println("zip: "+Item.getItemFromBlock(Blocks.CHEST).getClass());
 	}
 
 }
