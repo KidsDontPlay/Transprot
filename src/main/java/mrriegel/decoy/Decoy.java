@@ -1,6 +1,6 @@
 package mrriegel.decoy;
 
-import net.minecraft.item.Item;
+import net.minecraft.block.Block;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -20,7 +20,7 @@ public class Decoy {
 	public static Decoy instance;
 	public static final SimpleNetworkWrapper DISPATCHER = new SimpleNetworkWrapper(MODID);
 
-	public static final Item decoy = new ItemDecoy();
+	public static final Block dispatcher = new BlockDispatcher();
 
 	@SidedProxy(clientSide = "mrriegel.decoy.ClientProxy", serverSide = "mrriegel.decoy.CommonProxy")
 	public static CommonProxy proxy;
