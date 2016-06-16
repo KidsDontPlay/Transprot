@@ -1,4 +1,4 @@
-package mrriegel.decoy;
+package mrriegel.transprot;
 
 import java.awt.Color;
 import java.util.Collections;
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -25,36 +25,76 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 
 public class TileDispatcher extends TileEntity implements ITickable {
 	private Set<Transfer> transfers = Sets.newHashSet();
 	private Set<Pair<BlockPos, EnumFacing>> targets = Sets.newHashSet();
 	private Mode mode = Mode.NF;
 	private IInventory inv = new InventoryBasic(null, false, 15);
+	private boolean oreDict = false, meta = true, nbt = false, white = false;
 
 	public enum Mode {
-		NF, FF, RA;
+		NF("Nearest first"), FF("Farthest first"), RA("Random");
+		String text;
+
+		Mode(String text) {
+			this.text = text;
+		}
 
 		public Mode next() {
 			return values()[(this.ordinal() + 1) % values().length];
 		}
 	}
 
+	public boolean canTransfer(ItemStack stack) {
+		if (stack == null)
+			return false;
+		for (int i = 0; i < inv.getSizeInventory(); i++) {
+			ItemStack s = inv.getStackInSlot(i);
+			if (s != null && equal(stack, s))
+				return white;
+		}
+		return !white;
+	}
+
+	public boolean equal(ItemStack stack1, ItemStack stack2) {
+		if (oreDict && equalOre(stack1, stack2))
+			return true;
+		if (nbt && !ItemStack.areItemStackTagsEqual(stack1, stack2))
+			return false;
+		if (meta && stack1.getItemDamage() != stack2.getItemDamage())
+			return false;
+		return stack1.getItem() == stack2.getItem();
+	}
+
+	boolean equalOre(ItemStack stack1, ItemStack stack2) {
+		for (int i : OreDictionary.getOreIDs(stack1)) {
+			if (Ints.asList(OreDictionary.getOreIDs(stack2)).contains(i))
+				return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
-		readTransfersFromNBT(compound);
 		NBTTagList lis2 = compound.getTagList("lis2", 10);
 		targets = Sets.newHashSet();
 		for (int i = 0; i < lis2.tagCount(); i++) {
 			NBTTagCompound nbt = lis2.getCompoundTagAt(i);
 			targets.add(new ImmutablePair<BlockPos, EnumFacing>(BlockPos.fromLong(nbt.getLong("pos")), EnumFacing.values()[nbt.getInteger("face")]));
 		}
+		NBTTagList lis = compound.getTagList("lis", 10);
+		transfers = Sets.newHashSet();
+		for (int i = 0; i < lis.tagCount(); i++)
+			transfers.add(Transfer.loadFromNBT(lis.getCompoundTagAt(i)));
 
 		if (compound.hasKey("mode"))
 			mode = Mode.valueOf(compound.getString("mode"));
@@ -70,20 +110,19 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				inv.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
 			}
 		}
+		if (compound.hasKey("ore"))
+			oreDict = compound.getBoolean("ore");
+		if (compound.hasKey("meta"))
+			meta = compound.getBoolean("meta");
+		if (compound.hasKey("nbt"))
+			nbt = compound.getBoolean("nbt");
+		if (compound.hasKey("white"))
+			white = compound.getBoolean("white");
 		super.readFromNBT(compound);
-	}
-
-	public void readTransfersFromNBT(NBTTagCompound compound) {
-		NBTTagList lis = compound.getTagList("lis", 10);
-		transfers = Sets.newHashSet();
-		for (int i = 0; i < lis.tagCount(); i++)
-			transfers.add(Transfer.loadFromNBT(lis.getCompoundTagAt(i)));
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		writeTransfersToNBT(compound);
-
 		NBTTagList lis2 = new NBTTagList();
 		for (Pair<BlockPos, EnumFacing> t : targets) {
 			NBTTagCompound n = new NBTTagCompound();
@@ -103,11 +142,6 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				nbttaglist.appendTag(nbttagcompound);
 			}
 		}
-		compound.setTag("Items", nbttaglist);
-		return super.writeToNBT(compound);
-	}
-
-	public void writeTransfersToNBT(NBTTagCompound compound) {
 		NBTTagList lis = new NBTTagList();
 		for (Transfer t : transfers) {
 			NBTTagCompound n = new NBTTagCompound();
@@ -115,16 +149,12 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			lis.appendTag(n);
 		}
 		compound.setTag("lis", lis);
-	}
-
-	public void deserializeTransfers(NBTTagCompound nbt) {
-		this.readTransfersFromNBT(nbt);
-	}
-
-	public NBTTagCompound serializeTransfers() {
-		NBTTagCompound nbt = new NBTTagCompound();
-		writeTransfersToNBT(nbt);
-		return nbt;
+		compound.setTag("Items", nbttaglist);
+		compound.setBoolean("ore", oreDict);
+		compound.setBoolean("meta", meta);
+		compound.setBoolean("nbt", nbt);
+		compound.setBoolean("white", white);
+		return super.writeToNBT(compound);
 	}
 
 	@Override
@@ -162,14 +192,17 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	void moveItems() {
 		for (Transfer tr : getTransfers()) {
-			tr.current = tr.current.add(tr.getVec().scale(.025 / tr.getVec().lengthVector()));
+			if (!tr.blocked && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded())
+				tr.current = tr.current.add(tr.getVec().scale(.025 / tr.getVec().lengthVector()));
 		}
 	}
 
-	void transferItems() {
+	boolean startTransfer() {
 		if (worldObj.getTotalWorldTime() % 30L == 0 && !worldObj.isBlockPowered(pos)) {
 			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDispatcher.FACING);
 			IItemHandler inv = InvHelper.getItemHandler(worldObj.getTileEntity(pos.offset(face)), face.getOpposite());
+			if (inv == null)
+				return false;
 			List<Pair<BlockPos, EnumFacing>> lis = Lists.newArrayList(targets);
 			switch (mode) {
 			case FF:
@@ -198,33 +231,31 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			}
 			for (Pair<BlockPos, EnumFacing> pair : lis)
 				for (int i = 0; i < inv.getSlots(); i++) {
-					if (inv.getStackInSlot(i) == null)
+					if (inv.getStackInSlot(i) == null || !canTransfer(inv.getStackInSlot(i)))
 						continue;
 					int max = 1;
-					ItemStack send = inv.extractItem(i, 3, true);
-					if (InvHelper.canInsert(inv, send) <= 0)
+					ItemStack send = inv.extractItem(i, max, true);
+					int canInsert = InvHelper.canInsert(InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight()), send);
+					if (canInsert <= 0)
 						continue;
-					// System.out.println("caninsert: "+InvHelper.canInsert(inv,
-					// send)+" "+send);
-					ItemStack x = inv.extractItem(i, Math.min(max, InvHelper.canInsert(inv, send)), false);
+					ItemStack x = inv.extractItem(i, canInsert, false);
 					if (x != null) {
 						transfers.add(new Transfer(pos, pair.getLeft(), pair.getRight(), x));
-						updateClient();
-						return;
+						markDirty();
+						return true;
 					}
 				}
 		}
+		return false;
 	}
 
 	Color getColor() {
 		Integer num = Integer.valueOf(pos.getX()) * 29 + Integer.valueOf(pos.getY()) * 17 + Integer.valueOf(pos.getZ()) * 67;
-		return Color.getHSBColor((/* num.hashCode() */pos.toLong() % 360l) / 360f, 1, 1);
+		return Color.getHSBColor(((num.hashCode() * pos.toLong() * pos.hashCode()) % 360l) / 360f, 1, 1);
 	}
 
 	@Override
 	public void update() {
-		// if(worldObj.getTotalWorldTime()%20L==0)
-		// System.out.println("da_ "+pos);
 		boolean removed = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {
@@ -237,25 +268,41 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		moveItems();
 		if (worldObj.isRemote)
 			return;
-
+		boolean changed = false;
 		Iterator<Transfer> it = transfers.iterator();
 		while (it.hasNext()) {
 			Transfer tr = it.next();
-			if (tr.dis == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight())) {
+			if (tr.rec == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight())) {
+				InventoryHelper.spawnItemStack(worldObj, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
 				it.remove();
 				removed = true;
 				continue;
 			}
 			if (tr.received()) {
 				ItemStack rest = InvHelper.insert(worldObj.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
-				// System.out.println("rest: "+rest);
-				it.remove();
-				removed = true;
+				if (rest != null) {
+					tr.stack = rest;
+					for (Transfer t : transfers) {
+						if (t.rec.equals(tr.rec)) {
+							if (!t.blocked)
+								changed = true;
+							t.blocked = true;
+						}
+					}
+				} else {
+					for (Transfer t : transfers) {
+						if (t.rec.equals(tr.rec))
+							t.blocked = false;
+					}
+					it.remove();
+					removed = true;
+				}
+				worldObj.getTileEntity(tr.rec.getLeft()).markDirty();
 			}
 		}
-		if (removed)
+		boolean started = startTransfer();
+		if (removed || changed || started)
 			updateClient();
-		transferItems();
 	}
 
 	public Set<Transfer> getTransfers() {
@@ -288,6 +335,38 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	public void setTargets(Set<Pair<BlockPos, EnumFacing>> targets) {
 		this.targets = targets;
+	}
+
+	public boolean isOreDict() {
+		return oreDict;
+	}
+
+	public void setOreDict(boolean oreDict) {
+		this.oreDict = oreDict;
+	}
+
+	public boolean isMeta() {
+		return meta;
+	}
+
+	public void setMeta(boolean meta) {
+		this.meta = meta;
+	}
+
+	public boolean isNbt() {
+		return nbt;
+	}
+
+	public void setNbt(boolean nbt) {
+		this.nbt = nbt;
+	}
+
+	public boolean isWhite() {
+		return white;
+	}
+
+	public void setWhite(boolean white) {
+		this.white = white;
 	}
 
 }

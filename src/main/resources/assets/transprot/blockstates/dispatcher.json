@@ -1,12 +1,13 @@
 {
     "forge_marker":1,
     "defaults":{
-        "model":"decoy:dispatcher",
+        "model":"transprot:dispatcher",
         "textures":{
             "particle":"blocks/hardened_clay_stained_black",
-            "body":"blocks/hardened_clay_stained_black",
-            "line":"blocks/wool_colored_orange",
-            "pile":"blocks/emerald_block"
+            "body":"blocks/iron_block",
+            "line":"blocks/gold_block",
+            "pile":"items/ender_pearl",
+            "pileTop":"blocks/slime"
         }
     },
     "variants":{

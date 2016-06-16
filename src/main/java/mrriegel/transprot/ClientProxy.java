@@ -1,10 +1,9 @@
-package mrriegel.decoy;
+package mrriegel.transprot;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -20,7 +19,7 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void init(FMLInitializationEvent event) {
 		super.init(event);
-		 MinecraftForge.EVENT_BUS.register(new TransferRender());
+		MinecraftForge.EVENT_BUS.register(new TransferRender());
 	}
 
 	@Override
@@ -29,8 +28,8 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public void registerItemModels() {
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(Decoy.dispatcher), 0, new ModelResourceLocation(Decoy.dispatcher.getRegistryName().toString(), "inventory"));
-		ModelLoader.setCustomModelResourceLocation(Decoy.linker, 0, new ModelResourceLocation(Decoy.linker.getRegistryName().toString(), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(Transprot.dispatcher), 0, new ModelResourceLocation(Transprot.dispatcher.getRegistryName(), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(Transprot.linker, 0, new ModelResourceLocation(Transprot.linker.getRegistryName(), "inventory"));
 	}
 
 }

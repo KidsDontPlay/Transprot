@@ -1,7 +1,4 @@
-package mrriegel.decoy;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+package mrriegel.transprot;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,11 +6,15 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 public class Transfer {
 	public BlockPos dis;
 	public Pair<BlockPos, EnumFacing> rec;
 	public Vec3d current;
 	public ItemStack stack;
+	public boolean blocked = false;
 
 	private Transfer() {
 	}
@@ -24,6 +25,7 @@ public class Transfer {
 		dis = BlockPos.fromLong(compound.getLong("dis"));
 		rec = new ImmutablePair<BlockPos, EnumFacing>(BlockPos.fromLong(compound.getLong("rec")), EnumFacing.values()[compound.getInteger("face")]);
 		current = new Vec3d(compound.getDouble("xx"), compound.getDouble("yy"), compound.getDouble("zz"));
+		blocked = compound.getBoolean("blocked");
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -36,6 +38,7 @@ public class Transfer {
 		compound.setDouble("xx", current.xCoord);
 		compound.setDouble("yy", current.yCoord);
 		compound.setDouble("zz", current.zCoord);
+		compound.setBoolean("blocked", blocked);
 		return c;
 	}
 
@@ -47,7 +50,9 @@ public class Transfer {
 	}
 
 	public boolean received() {
-		return current.lengthVector() > getVec().lengthVector();
+		// return current.lengthVector() > getVec().lengthVector();
+		double dista = new Vec3d(dis.getX(), dis.getY(), dis.getZ()).add(current).distanceTo(new Vec3d(rec.getLeft().getX() + .5, rec.getLeft().getY() + .5, rec.getLeft().getZ() + .5));
+		return dista < .5;
 	}
 
 	public Vec3d getVec() {

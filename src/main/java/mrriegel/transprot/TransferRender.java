@@ -1,4 +1,4 @@
-package mrriegel.decoy;
+package mrriegel.transprot;
 
 import java.awt.Color;
 
@@ -22,8 +22,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.collect.Lists;
-
 public class TransferRender {
 	Minecraft mc = Minecraft.getMinecraft();
 
@@ -40,7 +38,10 @@ public class TransferRender {
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
 			if (mc.thePlayer.getDistance(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ()) < 24) {
-				GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
+				float swing = 6.28318530718F * (System.currentTimeMillis() * 4 & 0x3FFFL) / 0x3FFFL;
+				float tar = (float) Math.sin(swing);
+				tar = 0f;
+				GlStateManager.translate(tr.current.xCoord, tr.current.yCoord + (tar / 10f), tr.current.zCoord);
 				EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
 				ei.hoverStart = 0;
 
@@ -70,7 +71,7 @@ public class TransferRender {
 	@SubscribeEvent
 	public void render(RenderWorldLastEvent event) {
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-		if (player.inventory.getCurrentItem() == null || player.inventory.getCurrentItem().getItem() != Decoy.linker)
+		if (player.inventory.getCurrentItem() == null || player.inventory.getCurrentItem().getItem() != Transprot.linker)
 			return;
 
 		double doubleX = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.getPartialTicks();

@@ -1,8 +1,4 @@
-package mrriegel.decoy;
-
-import java.util.Random;
-
-import org.apache.commons.lang3.tuple.Pair;
+package mrriegel.transprot;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -13,12 +9,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityDispenser;
-import net.minecraft.tileentity.TileEntityDropper;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -26,7 +19,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 public class BlockDispatcher extends BlockContainer {
 
@@ -34,6 +26,7 @@ public class BlockDispatcher extends BlockContainer {
 
 	public BlockDispatcher() {
 		super(Material.IRON);
+		this.setHardness(1.5f);
 		this.setRegistryName("dispatcher");
 		this.setUnlocalizedName(getRegistryName().toString());
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.DOWN));
@@ -127,11 +120,23 @@ public class BlockDispatcher extends BlockContainer {
 			TileEntity tileentity = worldIn.getTileEntity(pos);
 
 			if (tileentity instanceof TileDispatcher) {
-				playerIn.openGui(Decoy.instance, 0, worldIn, pos.getX(), pos.getY(), pos.getZ());
+				playerIn.openGui(Transprot.instance, 0, worldIn, pos.getX(), pos.getY(), pos.getZ());
 			}
 
 			return true;
 		}
+	}
+
+	@Override
+	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+		TileEntity t = worldIn.getTileEntity(pos);
+		if (!worldIn.isRemote && t instanceof TileDispatcher) {
+			TileDispatcher tile = (TileDispatcher) t;
+			for (Transfer tr : tile.getTransfers()) {
+				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
+			}
+		}
+		super.breakBlock(worldIn, pos, state);
 	}
 
 }
