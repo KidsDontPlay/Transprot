@@ -38,12 +38,12 @@ public class CommonProxy implements IGuiHandler {
 	}
 
 	public void postInit(FMLPostInitializationEvent event) {
-		upgrades.put(Items.NETHER_STAR, new Boost(5l, .075, 64));
+		upgrades.put(Items.NETHER_STAR, new Boost(5l, .1, 64));
 		upgrades.put(Item.getItemFromBlock(Blocks.OBSIDIAN), new Boost(60l, .02, 32));
-		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost(20l, .03, 1));
-		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost(30l, .015, 4));
-		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(40l, .05, 12));
-		upgrades.put(Items.DIAMOND, new Boost(10l, .06, 8));
+		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost(20l, .045, 1));
+		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost(30l, .015, 8));
+		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(40l, .06, 12));
+		upgrades.put(Items.DIAMOND, new Boost(10l, .07, 8));
 		upgrades.put(Items.EMERALD, new Boost(10l, .02, 16));
 	}
 

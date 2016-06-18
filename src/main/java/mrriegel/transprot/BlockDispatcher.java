@@ -132,6 +132,8 @@ public class BlockDispatcher extends BlockContainer {
 		TileEntity t = worldIn.getTileEntity(pos);
 		if (!worldIn.isRemote && t instanceof TileDispatcher) {
 			TileDispatcher tile = (TileDispatcher) t;
+			if (tile.getUpgrades().getStackInSlot(0) != null)
+				InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.getUpgrades().getStackInSlot(0));
 			for (Transfer tr : tile.getTransfers()) {
 				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
 			}

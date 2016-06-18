@@ -23,6 +23,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -103,12 +104,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			mode = Mode.valueOf(compound.getString("mode"));
 		else
 			mode = Mode.NF;
-		inv = new InventoryBasic(null, false, 15) {
-			@Override
-			public int getInventoryStackLimit() {
-				return 1;
-			}
-		};
+		inv = new InventoryBasic(null, false, 15);
 		NBTTagList nbttaglist = compound.getTagList("Items", 10);
 
 		for (int i = 0; i < nbttaglist.tagCount(); ++i) {
@@ -118,7 +114,12 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				inv.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
 			}
 		}
-		upgrades = new InventoryBasic(null, false, 1);
+		upgrades = new InventoryBasic(null, false, 1) {
+			@Override
+			public int getInventoryStackLimit() {
+				return 1;
+			}
+		};
 		NBTTagList nbttaglist2 = compound.getTagList("upgrades", 10);
 
 		for (int i = 0; i < nbttaglist2.tagCount(); ++i) {
@@ -230,7 +231,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		d = d.normalize().scale(0.25);
 		Set<BlockPos> set = Sets.newHashSet();
 		while (p1.distanceTo(p2) > 0.5) {
-			set.add(new BlockPos(p1));
+			set.add(new BlockPos(MathHelper.floor_double(p1.xCoord), MathHelper.floor_double(p1.yCoord), MathHelper.floor_double(p1.zCoord)));
 			p1 = p1.add(d);
 		}
 		set.remove(tr.dis);
@@ -302,6 +303,15 @@ public class TileDispatcher extends TileEntity implements ITickable {
 						continue;
 					int max = getStackSize();
 					ItemStack send = inv.extractItem(i, max, true);
+					boolean blocked = false;
+					for (Transfer t : transfers) {
+						if (t.rec.equals(pair) && t.blocked) {
+							blocked = true;
+							break;
+						}
+					}
+					if (blocked)
+						continue;
 					int canInsert = InvHelper.canInsert(InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight()), send);
 					if (canInsert <= 0)
 						continue;
@@ -311,7 +321,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 						if (!wayFree(tr))
 							continue;
 						if (ConfigHandler.particle)
-							Transprot.DISPATCHER.sendToDimension(new ParticleMessage(pos, tr.getVec().normalize().scale(0.018)), worldObj.provider.getDimension());
+							Transprot.DISPATCHER.sendToDimension(new ParticleMessage(pos, tr.getVec().normalize().scale(0.020)), worldObj.provider.getDimension());
 						transfers.add(tr);
 						inv.extractItem(i, canInsert, false);
 						markDirty();

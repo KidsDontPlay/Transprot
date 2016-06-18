@@ -18,7 +18,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.server.command.ForgeCommand;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
@@ -40,8 +39,8 @@ public class TransferRender {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
-			double factor = (double) mc.getDebugFPS() / 20d;
-			if (!tr.blocked && !mc.isGamePaused()&&mc.theWorld.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+			double factor = Minecraft.getDebugFPS() / 20d;
+			if (!tr.blocked && !mc.isGamePaused() && mc.theWorld.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				tr.current = tr.current.add(tr.getVec().scale((te.getSpeed() / factor) / tr.getVec().lengthVector()));
 			}
 
@@ -53,7 +52,6 @@ public class TransferRender {
 			GlStateManager.disableLighting();
 
 			float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
-
 			GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
 			GlStateManager.scale(0.5F, 0.5F, 0.5F);
 			GlStateManager.pushAttrib();
@@ -67,8 +65,6 @@ public class TransferRender {
 
 			GlStateManager.popMatrix();
 		}
-		// if (mc.theWorld.getTotalWorldTime() % 10 == 0)
-		// Decoy.DISPATCHER.sendToServer(new SyncMessageS(te));
 	}
 
 	@SubscribeEvent
@@ -87,7 +83,6 @@ public class TransferRender {
 				GlStateManager.disableTexture2D();
 				GlStateManager.disableLighting();
 				GlStateManager.translate(-doubleX, -doubleY, -doubleZ);
-				// code
 
 				for (Pair<BlockPos, EnumFacing> pa : ((TileDispatcher) t).getTargets()) {
 					BlockPos p = pa.getLeft();
@@ -115,7 +110,6 @@ public class TransferRender {
 				GlStateManager.enableTexture2D();
 				GlStateManager.enableLighting();
 				GlStateManager.color(1f, 1f, 1f, 1f);
-
 				GlStateManager.popMatrix();
 			}
 	}

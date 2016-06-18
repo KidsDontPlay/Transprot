@@ -47,10 +47,10 @@ public class ParticleMessage implements IMessage {
 				@Override
 				public void run() {
 					double dx = message.vec.xCoord, dy = message.vec.yCoord, dz = message.vec.zCoord;
-					for (int i = 0; i < 5; i++) {
-						double xx = (new Random().nextDouble() - .5) / 3d;
-						double yy = (new Random().nextDouble() - .5) / 3d;
-						double zz = (new Random().nextDouble() - .5) / 3d;
+					for (int i = 0; i < 7; i++) {
+						double xx = (new Random().nextDouble() - .5) / 2d;
+						double yy = (new Random().nextDouble() - .5) / 2d;
+						double zz = (new Random().nextDouble() - .5) / 2d;
 						Minecraft.getMinecraft().theWorld.spawnParticle(EnumParticleTypes.END_ROD, message.pos.getX() + .5 + xx, message.pos.getY() + .5 + yy, message.pos.getZ() + .5 + zz, dx, dy, dz);
 					}
 				}
