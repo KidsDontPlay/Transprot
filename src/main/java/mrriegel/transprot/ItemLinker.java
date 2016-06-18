@@ -33,14 +33,15 @@ public class ItemLinker extends Item {
 		if (player.isSneaking() && world.getTileEntity(pos) instanceof TileDispatcher) {
 			stack.setTagCompound(new NBTTagCompound());
 			stack.getTagCompound().setLong("pos", pos.toLong());
+			stack.getTagCompound().setInteger("dim", world.provider.getDimension());
 			player.addChatMessage(new TextComponentString("Bound to Dispatcher."));
 			return EnumActionResult.SUCCESS;
 		}
-		if (player.isSneaking() && InvHelper.hasItemHandler(world, pos, facing)) {
+		if (player.isSneaking() && InvHelper.hasItemHandler(world, pos, facing) && stack.getTagCompound() != null) {
 			BlockPos tPos = BlockPos.fromLong(stack.getTagCompound().getLong("pos"));
-			if (stack.getTagCompound() != null && world.getTileEntity(tPos) instanceof TileDispatcher) {
+			if (world.provider.getDimension() == stack.getTagCompound().getInteger("dim") && world.getTileEntity(tPos) instanceof TileDispatcher) {
 				Pair<BlockPos, EnumFacing> pair = new ImmutablePair<BlockPos, EnumFacing>(pos, facing);
-				if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < 24) {
+				if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
 					((TileDispatcher) world.getTileEntity(tPos)).getTargets().add(pair);
 					((TileDispatcher) world.getTileEntity(tPos)).updateClient();
 					player.addChatMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));

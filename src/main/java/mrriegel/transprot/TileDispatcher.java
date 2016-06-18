@@ -22,6 +22,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.IItemHandler;
@@ -190,16 +191,42 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		}
 	}
 
+	boolean wayFree(Transfer tr) {
+		if (!ConfigHandler.freeWay)
+			return true;
+		Vec3d p1 = new Vec3d(tr.dis);
+		p1.addVector(.5, .5, .5);
+		Vec3d p2 = new Vec3d(tr.rec.getLeft());
+		p2.addVector(.5, .5, .5);
+		Vec3d d = new Vec3d(p1.xCoord - p2.xCoord, p1.yCoord - p2.yCoord, p1.zCoord - p2.zCoord);
+		d = d.scale(-1);
+		d = d.normalize().scale(0.25);
+		Set<BlockPos> set = Sets.newHashSet();
+		while (p1.distanceTo(p2) > 0.5) {
+			set.add(new BlockPos(p1));
+			p1 = p1.add(d);
+		}
+		set.remove(tr.dis);
+		set.remove(tr.rec.getLeft());
+		for (BlockPos p : set)
+			if (!worldObj.isAirBlock(p))
+				return false;
+		return true;
+	}
+
 	void moveItems() {
 		for (Transfer tr : getTransfers()) {
-			if (!tr.blocked && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded())
+			if (!tr.blocked && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				tr.current = tr.current.add(tr.getVec().scale(.025 / tr.getVec().lengthVector()));
+			}
 		}
 	}
 
 	boolean startTransfer() {
 		if (worldObj.getTotalWorldTime() % 30L == 0 && !worldObj.isBlockPowered(pos)) {
 			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDispatcher.FACING);
+			if (!worldObj.getChunkFromBlockCoords(pos.offset(face)).isLoaded())
+				return false;
 			IItemHandler inv = InvHelper.getItemHandler(worldObj.getTileEntity(pos.offset(face)), face.getOpposite());
 			if (inv == null)
 				return false;
@@ -238,9 +265,15 @@ public class TileDispatcher extends TileEntity implements ITickable {
 					int canInsert = InvHelper.canInsert(InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight()), send);
 					if (canInsert <= 0)
 						continue;
-					ItemStack x = inv.extractItem(i, canInsert, false);
+					ItemStack x = inv.extractItem(i, canInsert, true);
 					if (x != null) {
-						transfers.add(new Transfer(pos, pair.getLeft(), pair.getRight(), x));
+						Transfer tr = new Transfer(pos, pair.getLeft(), pair.getRight(), x);
+						if (!wayFree(tr))
+							continue;
+						if (ConfigHandler.particle)
+							Transprot.DISPATCHER.sendToDimension(new ParticleMessage(pos, tr.getVec().normalize().scale(0.018)), worldObj.provider.getDimension());
+						transfers.add(tr);
+						inv.extractItem(i, canInsert, false);
 						markDirty();
 						return true;
 					}
@@ -250,12 +283,14 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	}
 
 	Color getColor() {
-		Integer num = Integer.valueOf(pos.getX()) * 29 + Integer.valueOf(pos.getY()) * 17 + Integer.valueOf(pos.getZ()) * 67;
-		return Color.getHSBColor(((num.hashCode() * pos.toLong() * pos.hashCode()) % 360l) / 360f, 1, 1);
+		return Color.getHSBColor(((pos.hashCode() * 761) % 360l) / 360f, 1, 1);
 	}
 
 	@Override
 	public void update() {
+		moveItems();
+		if (worldObj.isRemote)
+			return;
 		boolean removed = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {
@@ -265,9 +300,6 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				removed = true;
 			}
 		}
-		moveItems();
-		if (worldObj.isRemote)
-			return;
 		boolean changed = false;
 		Iterator<Transfer> it = transfers.iterator();
 		while (it.hasNext()) {
@@ -278,7 +310,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				removed = true;
 				continue;
 			}
-			if (tr.received()) {
+			if (tr.received() && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				ItemStack rest = InvHelper.insert(worldObj.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
 				if (rest != null) {
 					tr.stack = rest;

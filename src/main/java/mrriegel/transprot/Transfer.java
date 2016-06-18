@@ -1,5 +1,7 @@
 package mrriegel.transprot;
 
+import java.util.Random;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -15,6 +17,7 @@ public class Transfer {
 	public Vec3d current;
 	public ItemStack stack;
 	public boolean blocked = false;
+	public int turn;
 
 	private Transfer() {
 	}
@@ -26,6 +29,7 @@ public class Transfer {
 		rec = new ImmutablePair<BlockPos, EnumFacing>(BlockPos.fromLong(compound.getLong("rec")), EnumFacing.values()[compound.getInteger("face")]);
 		current = new Vec3d(compound.getDouble("xx"), compound.getDouble("yy"), compound.getDouble("zz"));
 		blocked = compound.getBoolean("blocked");
+		turn = compound.getInteger("turn");
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -39,6 +43,7 @@ public class Transfer {
 		compound.setDouble("yy", current.yCoord);
 		compound.setDouble("zz", current.zCoord);
 		compound.setBoolean("blocked", blocked);
+		compound.setInteger("turn", turn);
 		return c;
 	}
 
@@ -47,6 +52,7 @@ public class Transfer {
 		this.rec = new ImmutablePair<BlockPos, EnumFacing>(rec, face);
 		this.current = new Vec3d(.5, .5, .5);
 		this.stack = stack;
+		this.turn = new Random().nextInt();
 	}
 
 	public boolean received() {

@@ -3,11 +3,12 @@
     "defaults":{
         "model":"transprot:dispatcher",
         "textures":{
-            "particle":"blocks/hardened_clay_stained_black",
+            "particle":"blocks/iron_block",
             "body":"blocks/iron_block",
             "line":"blocks/gold_block",
             "pile":"items/ender_pearl",
-            "pileTop":"blocks/slime"
+            "pileTop":"blocks/slime",
+            "back":"blocks/hopper_inside"
         }
     },
     "variants":{

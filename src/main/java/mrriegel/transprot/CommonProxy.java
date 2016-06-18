@@ -29,8 +29,9 @@ public class CommonProxy implements IGuiHandler {
 	public void init(FMLInitializationEvent event) {
 		int id = 0;
 		Transprot.DISPATCHER.registerMessage(ButtonMessage.Handler.class, ButtonMessage.class, id++, Side.SERVER);
+		Transprot.DISPATCHER.registerMessage(ParticleMessage.Handler.class, ParticleMessage.class, id++, Side.CLIENT);
+
 		NetworkRegistry.INSTANCE.registerGuiHandler(Transprot.instance, this);
-		// MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	public void postInit(FMLPostInitializationEvent event) {

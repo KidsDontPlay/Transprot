@@ -35,15 +35,15 @@ public class GuiDispatcher extends GuiContainer {
 	@Override
 	public void initGui() {
 		super.initGui();
-		mode = new GuiButton(0, 110 + guiLeft, 16 + guiTop, 20, 20, tile.getMode().toString());
+		mode = new GuiButton(0, 105 + guiLeft, 16 + guiTop, 20, 20, tile.getMode().toString());
 		buttonList.add(mode);
-		ore = new GuiButton(1, 132 + guiLeft, 16 + guiTop, 20, 20, "");
+		ore = new GuiButton(1, 127 + guiLeft, 16 + guiTop, 20, 20, "");
 		buttonList.add(ore);
-		meta = new GuiButton(2, 110 + guiLeft, 38 + guiTop, 20, 20, "M");
+		meta = new GuiButton(2, 105 + guiLeft, 38 + guiTop, 20, 20, "M");
 		buttonList.add(meta);
-		nbt = new GuiButton(3, 132 + guiLeft, 38 + guiTop, 20, 20, "N");
+		nbt = new GuiButton(3, 127 + guiLeft, 38 + guiTop, 20, 20, "N");
 		buttonList.add(nbt);
-		white = new GuiButton(4, 110 + guiLeft, 60 + guiTop, 20, 20, "");
+		white = new GuiButton(4, 105 + guiLeft, 60 + guiTop, 20, 20, "");
 		buttonList.add(white);
 
 	}

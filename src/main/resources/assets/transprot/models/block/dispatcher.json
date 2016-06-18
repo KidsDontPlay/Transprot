@@ -5,7 +5,7 @@
             "to":[15,2,15],
             "faces":{
                 "down":{
-                    "texture":"#body",
+                    "texture":"#back",
                     "rotation":180,
                     "cullface":"down"
                 },
@@ -43,17 +43,17 @@
                     "rotation":180
                 },
                 "north":{
-                    "texture":"#body"
+                    "texture":"#line"
                 },
                 "south":{
-                    "texture":"#body"
+                    "texture":"#line"
                 },
                 "west":{
-                    "texture":"#body",
+                    "texture":"#line",
                     "rotation":90
                 },
                 "east":{
-                    "texture":"#body",
+                    "texture":"#line",
                     "rotation":270
                 }
             }

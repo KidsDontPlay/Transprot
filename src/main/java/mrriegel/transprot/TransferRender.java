@@ -27,6 +27,8 @@ public class TransferRender {
 
 	@SubscribeEvent
 	public void ren(RenderWorldLastEvent e) {
+		if (!ConfigHandler.itemsVisible)
+			return;
 		for (TileEntity t : mc.theWorld.loadedTileEntityList)
 			if (t instanceof TileDispatcher)
 				renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
@@ -38,17 +40,15 @@ public class TransferRender {
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
 			if (mc.thePlayer.getDistance(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ()) < 24) {
-				float swing = 6.28318530718F * (System.currentTimeMillis() * 4 & 0x3FFFL) / 0x3FFFL;
-				float tar = (float) Math.sin(swing);
-				tar = 0f;
-				GlStateManager.translate(tr.current.xCoord, tr.current.yCoord + (tar / 10f), tr.current.zCoord);
+
+				GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
 				EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
 				ei.hoverStart = 0;
 
 				GlStateManager.pushMatrix();
 				GlStateManager.disableLighting();
 
-				float rotation = (float) (720.0 * (System.currentTimeMillis() & 0x3FFFL) / 0x3FFFL);
+				float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
 
 				GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
 				GlStateManager.scale(0.5F, 0.5F, 0.5F);
@@ -98,7 +98,8 @@ public class TransferRender {
 					GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
 					GL11.glLineWidth(4.5f);
 					GlStateManager.pushAttrib();
-					// GL11.glDisable(GL11.GL_DEPTH_TEST);
+					if (player.isSneaking())
+						GL11.glDisable(GL11.GL_DEPTH_TEST);
 
 					renderer.pos(x, y, z).endVertex();
 					renderer.pos(x2, y2, z2).endVertex();
