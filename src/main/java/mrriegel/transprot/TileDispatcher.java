@@ -328,9 +328,9 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	@Override
 	public void update() {
-		moveItems();
 		if (worldObj.isRemote)
 			return;
+		moveItems();
 		boolean removed = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {

@@ -18,6 +18,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.server.command.ForgeCommand;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
@@ -39,6 +40,10 @@ public class TransferRender {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
+			double factor = (double) mc.getDebugFPS() / 20d;
+			if (!tr.blocked && !mc.isGamePaused()&&mc.theWorld.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+				tr.current = tr.current.add(tr.getVec().scale((te.getSpeed() / factor) / tr.getVec().lengthVector()));
+			}
 
 			GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
 			EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
