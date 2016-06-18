@@ -30,7 +30,7 @@ public class TransferRender {
 		if (!ConfigHandler.itemsVisible)
 			return;
 		for (TileEntity t : mc.theWorld.loadedTileEntityList)
-			if (t instanceof TileDispatcher)
+			if (t instanceof TileDispatcher && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 24)
 				renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
 	}
 
@@ -39,28 +39,26 @@ public class TransferRender {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
-			if (mc.thePlayer.getDistance(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ()) < 24) {
 
-				GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
-				EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
-				ei.hoverStart = 0;
+			GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
+			EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
+			ei.hoverStart = 0;
 
-				GlStateManager.pushMatrix();
-				GlStateManager.disableLighting();
+			GlStateManager.pushMatrix();
+			GlStateManager.disableLighting();
 
-				float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
+			float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
 
-				GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
-				GlStateManager.scale(0.5F, 0.5F, 0.5F);
-				GlStateManager.pushAttrib();
-				RenderHelper.enableStandardItemLighting();
-				itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
-				RenderHelper.disableStandardItemLighting();
-				GlStateManager.popAttrib();
+			GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
+			GlStateManager.scale(0.5F, 0.5F, 0.5F);
+			GlStateManager.pushAttrib();
+			RenderHelper.enableStandardItemLighting();
+			itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
+			RenderHelper.disableStandardItemLighting();
+			GlStateManager.popAttrib();
 
-				GlStateManager.enableLighting();
-				GlStateManager.popMatrix();
-			}
+			GlStateManager.enableLighting();
+			GlStateManager.popMatrix();
 
 			GlStateManager.popMatrix();
 		}
@@ -73,12 +71,11 @@ public class TransferRender {
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 		if (player.inventory.getCurrentItem() == null || player.inventory.getCurrentItem().getItem() != Transprot.linker)
 			return;
-
 		double doubleX = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.getPartialTicks();
 		double doubleY = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.getPartialTicks();
 		double doubleZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.getPartialTicks();
 		for (TileEntity t : mc.theWorld.loadedTileEntityList)
-			if (t instanceof TileDispatcher) {
+			if (t instanceof TileDispatcher && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 64) {
 				Color color = ((TileDispatcher) t).getColor();
 				GlStateManager.pushMatrix();
 

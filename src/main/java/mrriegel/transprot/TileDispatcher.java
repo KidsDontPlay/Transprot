@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -41,6 +42,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	private Mode mode = Mode.NF;
 	private IInventory inv = new InventoryBasic(null, false, 15);
 	private boolean oreDict = false, meta = true, nbt = false, white = false;
+	private IInventory upgrades = new InventoryBasic(null, false, 1);
 
 	public enum Mode {
 		NF("Nearest first"), FF("Farthest first"), RA("Random");
@@ -101,7 +103,12 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			mode = Mode.valueOf(compound.getString("mode"));
 		else
 			mode = Mode.NF;
-		inv = new InventoryBasic(null, false, 15);
+		inv = new InventoryBasic(null, false, 15) {
+			@Override
+			public int getInventoryStackLimit() {
+				return 1;
+			}
+		};
 		NBTTagList nbttaglist = compound.getTagList("Items", 10);
 
 		for (int i = 0; i < nbttaglist.tagCount(); ++i) {
@@ -109,6 +116,16 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			int j = nbttagcompound.getByte("Slot") & 255;
 			if (j >= 0 && j < inv.getSizeInventory()) {
 				inv.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+			}
+		}
+		upgrades = new InventoryBasic(null, false, 1);
+		NBTTagList nbttaglist2 = compound.getTagList("upgrades", 10);
+
+		for (int i = 0; i < nbttaglist2.tagCount(); ++i) {
+			NBTTagCompound nbttagcompound = nbttaglist2.getCompoundTagAt(i);
+			int j = nbttagcompound.getByte("Slot") & 255;
+			if (j >= 0 && j < upgrades.getSizeInventory()) {
+				upgrades.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
 			}
 		}
 		if (compound.hasKey("ore"))
@@ -132,7 +149,6 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			lis2.appendTag(n);
 		}
 		compound.setTag("lis2", lis2);
-
 		compound.setString("mode", mode.toString());
 		NBTTagList nbttaglist = new NBTTagList();
 		for (int i = 0; i < inv.getSizeInventory(); ++i) {
@@ -143,6 +159,18 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				nbttaglist.appendTag(nbttagcompound);
 			}
 		}
+		compound.setTag("Items", nbttaglist);
+
+		NBTTagList nbttaglist2 = new NBTTagList();
+		for (int i = 0; i < upgrades.getSizeInventory(); ++i) {
+			if (upgrades.getStackInSlot(i) != null) {
+				NBTTagCompound nbttagcompound = new NBTTagCompound();
+				nbttagcompound.setByte("Slot", (byte) i);
+				upgrades.getStackInSlot(i).writeToNBT(nbttagcompound);
+				nbttaglist2.appendTag(nbttagcompound);
+			}
+		}
+		compound.setTag("upgrades", nbttaglist2);
 		NBTTagList lis = new NBTTagList();
 		for (Transfer t : transfers) {
 			NBTTagCompound n = new NBTTagCompound();
@@ -150,7 +178,6 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			lis.appendTag(n);
 		}
 		compound.setTag("lis", lis);
-		compound.setTag("Items", nbttaglist);
 		compound.setBoolean("ore", oreDict);
 		compound.setBoolean("meta", meta);
 		compound.setBoolean("nbt", nbt);
@@ -217,13 +244,25 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	void moveItems() {
 		for (Transfer tr : getTransfers()) {
 			if (!tr.blocked && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
-				tr.current = tr.current.add(tr.getVec().scale(.025 / tr.getVec().lengthVector()));
+				tr.current = tr.current.add(tr.getVec().scale(getSpeed() / tr.getVec().lengthVector()));
 			}
 		}
 	}
 
+	long getFrequence() {
+		return upgrades.getStackInSlot(0) == null ? Boost.defaultFrequence : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).frequence;
+	}
+
+	double getSpeed() {
+		return upgrades.getStackInSlot(0) == null ? Boost.defaultSpeed : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).speed;
+	}
+
+	int getStackSize() {
+		return upgrades.getStackInSlot(0) == null ? Boost.defaultStackSize : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).stackSize;
+	}
+
 	boolean startTransfer() {
-		if (worldObj.getTotalWorldTime() % 30L == 0 && !worldObj.isBlockPowered(pos)) {
+		if (worldObj.getTotalWorldTime() % getFrequence() == 0 && !worldObj.isBlockPowered(pos)) {
 			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDispatcher.FACING);
 			if (!worldObj.getChunkFromBlockCoords(pos.offset(face)).isLoaded())
 				return false;
@@ -256,11 +295,12 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				Collections.shuffle(lis);
 				break;
 			}
+
 			for (Pair<BlockPos, EnumFacing> pair : lis)
 				for (int i = 0; i < inv.getSlots(); i++) {
 					if (inv.getStackInSlot(i) == null || !canTransfer(inv.getStackInSlot(i)))
 						continue;
-					int max = 1;
+					int max = getStackSize();
 					ItemStack send = inv.extractItem(i, max, true);
 					int canInsert = InvHelper.canInsert(InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight()), send);
 					if (canInsert <= 0)
@@ -363,6 +403,14 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	public void setInv(IInventory inv) {
 		this.inv = inv;
+	}
+
+	public IInventory getUpgrades() {
+		return upgrades;
+	}
+
+	public void setUpgrades(IInventory upgrades) {
+		this.upgrades = upgrades;
 	}
 
 	public void setTargets(Set<Pair<BlockPos, EnumFacing>> targets) {

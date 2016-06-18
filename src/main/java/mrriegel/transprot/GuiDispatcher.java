@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,7 +20,6 @@ import com.google.common.collect.Lists;
 public class GuiDispatcher extends GuiContainer {
 	private static final ResourceLocation GUI_TEXTURES = new ResourceLocation(Transprot.MODID + ":textures/gui/dispatcher.png");
 	private final InventoryPlayer playerInventory;
-	public IInventory inv;
 	private TileDispatcher tile;
 	GuiButton mode, ore, meta, nbt, white;
 
@@ -29,7 +27,6 @@ public class GuiDispatcher extends GuiContainer {
 		super(new ContainerDispatcher(playerInv, tile));
 		this.playerInventory = playerInv;
 		this.tile = tile;
-		this.inv = tile.getInv();
 	}
 
 	@Override

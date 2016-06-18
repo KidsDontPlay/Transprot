@@ -1,7 +1,11 @@
 package mrriegel.transprot;
 
+import static mrriegel.transprot.Transprot.upgrades;
+import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -30,11 +34,17 @@ public class CommonProxy implements IGuiHandler {
 		int id = 0;
 		Transprot.DISPATCHER.registerMessage(ButtonMessage.Handler.class, ButtonMessage.class, id++, Side.SERVER);
 		Transprot.DISPATCHER.registerMessage(ParticleMessage.Handler.class, ParticleMessage.class, id++, Side.CLIENT);
-
 		NetworkRegistry.INSTANCE.registerGuiHandler(Transprot.instance, this);
 	}
 
 	public void postInit(FMLPostInitializationEvent event) {
+		upgrades.put(Items.NETHER_STAR, new Boost(5l, .055, 64));
+		upgrades.put(Item.getItemFromBlock(Blocks.OBSIDIAN), new Boost(60l, .02, 32));
+		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost(20l, .03, 1));
+		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost(30l, .015, 4));
+		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(40l, .04, 12));
+		upgrades.put(Items.DIAMOND, new Boost(10l, .04, 8));
+		upgrades.put(Items.EMERALD, new Boost(10l, .02, 16));
 	}
 
 	@Override

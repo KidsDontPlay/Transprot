@@ -3,6 +3,7 @@ package mrriegel.transprot;
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
@@ -22,7 +23,12 @@ public class ContainerDispatcher extends Container {
 				this.addSlotToContainer(new SlotGhost(inv, j + i * 5, 8 + j * 18, 17 + i * 18));
 			}
 		}
-
+		this.addSlotToContainer(new Slot(tile.getUpgrades(), 0, 151, 17) {
+			@Override
+			public boolean isItemValid(ItemStack stack) {
+				return stack == null || stack.getItem() == null ? false : Transprot.upgrades.keySet().contains(stack.getItem());
+			}
+		});
 		for (int k = 0; k < 3; ++k) {
 			for (int i1 = 0; i1 < 9; ++i1) {
 				this.addSlotToContainer(new Slot(playerInventory, i1 + k * 9 + 9, 8 + i1 * 18, 84 + k * 18));
@@ -54,7 +60,7 @@ public class ContainerDispatcher extends Container {
 
 			if (index < 9 + 6) {
 				return null;
-			} else {
+			} else if (slot.inventory instanceof InventoryPlayer) {
 				for (int i = 0; i < inv.getSizeInventory(); i++) {
 					ItemStack s = inv.getStackInSlot(i);
 					if (s == null) {
