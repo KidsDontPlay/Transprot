@@ -38,13 +38,15 @@ public class CommonProxy implements IGuiHandler {
 	}
 
 	public void postInit(FMLPostInitializationEvent event) {
-		upgrades.put(Items.NETHER_STAR, new Boost(5l, .1, 64));
-		upgrades.put(Item.getItemFromBlock(Blocks.OBSIDIAN), new Boost(60l, .02, 32));
-		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost(20l, .045, 1));
-		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost(30l, .015, 8));
-		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(40l, .06, 12));
-		upgrades.put(Items.DIAMOND, new Boost(10l, .07, 8));
-		upgrades.put(Items.EMERALD, new Boost(10l, .02, 16));
+		long f = Boost.defaultFrequence;
+		double t = Boost.defaultSpeed;
+		upgrades.put(Items.NETHER_STAR, new Boost((long) (f / 8.0), t * 5, 64));
+		upgrades.put(Item.getItemFromBlock(Blocks.OBSIDIAN), new Boost((long) (f * 1.5), t, 32));
+		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost((long) (f / 2.0), t * 1.3, 1));
+		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost((long) (f / 1.5), t, 12));
+		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(f, t * 1.6, 8));
+		upgrades.put(Items.DIAMOND, new Boost((long) (f / 5.0), t * 3.5, 8));
+		upgrades.put(Items.EMERALD, new Boost((long) (f / 6.0), t * 2, 16));
 	}
 
 	@Override
