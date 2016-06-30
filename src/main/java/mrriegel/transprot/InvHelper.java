@@ -43,7 +43,31 @@ public class InvHelper {
 		ItemStack s = ItemHandlerHelper.insertItemStacked(inv, stack, true);
 		int rest = s == null ? 0 : s.stackSize;
 		return stack.stackSize - rest;
+	}
 
+	public static boolean contains(IItemHandler inv, ItemStack stack) {
+		for (int i = 0; i < inv.getSlots(); i++) {
+			if (ItemHandlerHelper.canItemStacksStack(inv.getStackInSlot(i), stack)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static int maxInsert(IItemHandler inv, ItemStack stack) {
+		if (inv == null || stack == null)
+			return 0;
+		int insert = 0;
+		final int max = stack.getMaxStackSize();
+		for (int i = 0; i < inv.getSlots(); i++) {
+			ItemStack s = inv.insertItem(i, ItemHandlerHelper.copyStackWithSize(stack, max), true);
+			if (s == null)
+				insert += max;
+			else {
+				insert += max - s.stackSize;
+			}
+		}
+		return insert;
 	}
 
 }

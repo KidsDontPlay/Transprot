@@ -27,8 +27,9 @@ public class Transprot {
 
 	public static final Block dispatcher = new BlockDispatcher();
 	public static final Item linker = new ItemLinker();
+	public static final Item upgrade = new ItemUpgrade();
 
-	public static final Map<Item, Boost> upgrades = Maps.newHashMap();
+	public static final Map<Integer, Boost> upgrades = Maps.newHashMap();
 
 	@SidedProxy(clientSide = "mrriegel.transprot.ClientProxy", serverSide = "mrriegel.transprot.CommonProxy")
 	public static CommonProxy proxy;

@@ -1,5 +1,10 @@
 package mrriegel.transprot;
 
+import java.util.Collections;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -50,6 +55,19 @@ public class ButtonMessage implements IMessage {
 							break;
 						case 4:
 							tile.setWhite(!tile.isWhite());
+							break;
+						case 5:
+							tile.getTargets().clear();
+							break;
+						case 6:
+							tile.setMod(!tile.isMod());
+							break;
+						case 7:
+							if (tile.getStockNum() > 0)
+								tile.setStockNum(tile.getStockNum() - 1);
+							break;
+						case 8:
+							tile.setStockNum(tile.getStockNum() + 1);
 							break;
 						}
 					}

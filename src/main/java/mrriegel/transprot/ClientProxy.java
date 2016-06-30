@@ -23,7 +23,7 @@ public class ClientProxy extends CommonProxy {
 	public void init(FMLInitializationEvent event) {
 		super.init(event);
 		MinecraftForge.EVENT_BUS.register(new TransferRender());
-		MinecraftForge.EVENT_BUS.register(this);
+		// MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
@@ -34,28 +34,8 @@ public class ClientProxy extends CommonProxy {
 	public void registerItemModels() {
 		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(Transprot.dispatcher), 0, new ModelResourceLocation(Transprot.dispatcher.getRegistryName(), "inventory"));
 		ModelLoader.setCustomModelResourceLocation(Transprot.linker, 0, new ModelResourceLocation(Transprot.linker.getRegistryName(), "inventory"));
-	}
-
-	@SubscribeEvent
-	public void tooltip(ItemTooltipEvent e) {
-		if (e.getEntityPlayer().openContainer instanceof ContainerDispatcher) {
-			Item item = e.getItemStack().getItem();
-			if (Transprot.upgrades.keySet().contains(item)) {
-				Boost boost = Transprot.upgrades.get(item);
-				if (boost.frequence < Boost.defaultFrequence)
-					e.getToolTip().add("+ Frequence");
-				else if (boost.frequence > Boost.defaultFrequence)
-					e.getToolTip().add("- Frequence");
-				if (boost.speed > Boost.defaultSpeed)
-					e.getToolTip().add("+ Speed");
-				else if (boost.speed < Boost.defaultSpeed)
-					e.getToolTip().add("- Speed");
-				if (boost.stackSize > Boost.defaultStackSize)
-					e.getToolTip().add("+ Stack size");
-				else if (boost.stackSize < Boost.defaultStackSize)
-					e.getToolTip().add("- Stack size");
-			}
-		}
+		for (int i = 0; i < 4; i++)
+			ModelLoader.setCustomModelResourceLocation(Transprot.upgrade, i, new ModelResourceLocation(Transprot.upgrade.getRegistryName() + "_" + i, "inventory"));
 	}
 
 }

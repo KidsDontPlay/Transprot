@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -19,14 +20,14 @@ public class ContainerDispatcher extends Container {
 		this.inv = tile.getInv();
 
 		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 5; ++j) {
-				this.addSlotToContainer(new SlotGhost(inv, j + i * 5, 8 + j * 18, 17 + i * 18));
+			for (int j = 0; j < 3; ++j) {
+				this.addSlotToContainer(new SlotGhost(inv, j + i * 3, 8 + j * 18, 17 + i * 18));
 			}
 		}
 		this.addSlotToContainer(new Slot(tile.getUpgrades(), 0, 151, 17) {
 			@Override
 			public boolean isItemValid(ItemStack stack) {
-				return stack == null || stack.getItem() == null ? false : Transprot.upgrades.keySet().contains(stack.getItem());
+				return stack == null || stack.getItem() == null ? false : stack.getItem() instanceof ItemUpgrade;
 			}
 		});
 		for (int k = 0; k < 3; ++k) {
@@ -58,7 +59,7 @@ public class ContainerDispatcher extends Container {
 		if (slot != null && slot.getHasStack()) {
 			ItemStack itemstack1 = slot.getStack();
 
-			if (index < 9 + 6) {
+			if (slot.inventory instanceof InventoryBasic) {
 				return null;
 			} else if (slot.inventory instanceof InventoryPlayer) {
 				for (int i = 0; i < inv.getSizeInventory(); i++) {

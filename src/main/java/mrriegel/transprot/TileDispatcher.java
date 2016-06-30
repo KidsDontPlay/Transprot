@@ -11,6 +11,8 @@ import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.InventoryHelper;
@@ -28,6 +30,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -41,12 +45,13 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	private Set<Transfer> transfers = Sets.newHashSet();
 	private Set<Pair<BlockPos, EnumFacing>> targets = Sets.newHashSet();
 	private Mode mode = Mode.NF;
-	private IInventory inv = new InventoryBasic(null, false, 15);
-	private boolean oreDict = false, meta = true, nbt = false, white = false;
+	private IInventory inv = new InventoryBasic(null, false, 9);
+	private boolean oreDict = false, meta = true, nbt = false, white = false, mod = false;
 	private IInventory upgrades = new InventoryBasic(null, false, 1);
+	private int lastInsertIndex, stockNum = 0;
 
 	public enum Mode {
-		NF("Nearest first"), FF("Farthest first"), RA("Random");
+		NF("Nearest first"), FF("Farthest first"), RA("Random"), RR("Round Robin");
 		String text;
 
 		Mode(String text) {
@@ -71,6 +76,8 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	public boolean equal(ItemStack stack1, ItemStack stack2) {
 		if (oreDict && equalOre(stack1, stack2))
+			return true;
+		if (mod && stack1.getItem().getRegistryName().getResourceDomain().equals(stack2.getItem().getRegistryName().getResourceDomain()))
 			return true;
 		if (nbt && !ItemStack.areItemStackTagsEqual(stack1, stack2))
 			return false;
@@ -104,7 +111,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			mode = Mode.valueOf(compound.getString("mode"));
 		else
 			mode = Mode.NF;
-		inv = new InventoryBasic(null, false, 15);
+		inv = new InventoryBasic(null, false, 9);
 		NBTTagList nbttaglist = compound.getTagList("Items", 10);
 
 		for (int i = 0; i < nbttaglist.tagCount(); ++i) {
@@ -137,6 +144,10 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			nbt = compound.getBoolean("nbt");
 		if (compound.hasKey("white"))
 			white = compound.getBoolean("white");
+		if (compound.hasKey("mod"))
+			mod = compound.getBoolean("mod");
+		lastInsertIndex = compound.getInteger("index");
+		stockNum = compound.getInteger("stock");
 		super.readFromNBT(compound);
 	}
 
@@ -183,6 +194,9 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		compound.setBoolean("meta", meta);
 		compound.setBoolean("nbt", nbt);
 		compound.setBoolean("white", white);
+		compound.setBoolean("mod", mod);
+		compound.setInteger("index", lastInsertIndex);
+		compound.setInteger("stock", stockNum);
 		return super.writeToNBT(compound);
 	}
 
@@ -220,18 +234,18 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	}
 
 	boolean wayFree(Transfer tr) {
-		if (!ConfigHandler.freeWay)
+		if (throughBlocks())
 			return true;
 		Vec3d p1 = new Vec3d(tr.dis);
-		p1.addVector(.5, .5, .5);
+		p1 = p1.addVector(.5, .5, .5);
 		Vec3d p2 = new Vec3d(tr.rec.getLeft());
-		p2.addVector(.5, .5, .5);
-		Vec3d d = new Vec3d(p1.xCoord - p2.xCoord, p1.yCoord - p2.yCoord, p1.zCoord - p2.zCoord);
-		d = d.scale(-1);
+		p2 = p2.addVector(.5, .5, .5);
+		Vec3d d = tr.getVec();
 		d = d.normalize().scale(0.25);
 		Set<BlockPos> set = Sets.newHashSet();
 		while (p1.distanceTo(p2) > 0.5) {
 			set.add(new BlockPos(MathHelper.floor_double(p1.xCoord), MathHelper.floor_double(p1.yCoord), MathHelper.floor_double(p1.zCoord)));
+			// set.add(new BlockPos(p1.xCoord, p1.yCoord, p1.zCoord));
 			p1 = p1.add(d);
 		}
 		set.remove(tr.dis);
@@ -251,15 +265,21 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	}
 
 	long getFrequence() {
-		return upgrades.getStackInSlot(0) == null ? Boost.defaultFrequence : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).frequence;
+		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+			return Boost.defaultFrequence;
+		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).frequence;
 	}
 
 	double getSpeed() {
-		return upgrades.getStackInSlot(0) == null ? Boost.defaultSpeed : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).speed;
+		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+			return Boost.defaultSpeed;
+		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).speed;
 	}
 
 	int getStackSize() {
-		return upgrades.getStackInSlot(0) == null ? Boost.defaultStackSize : Transprot.upgrades.get(upgrades.getStackInSlot(0).getItem()).stackSize;
+		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+			return Boost.defaultStackSize;
+		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).stackSize;
 	}
 
 	boolean startTransfer() {
@@ -270,7 +290,10 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			IItemHandler inv = InvHelper.getItemHandler(worldObj.getTileEntity(pos.offset(face)), face.getOpposite());
 			if (inv == null)
 				return false;
-			List<Pair<BlockPos, EnumFacing>> lis = Lists.newArrayList(targets);
+			List<Pair<BlockPos, EnumFacing>> lis = Lists.newArrayList();
+			for (Pair<BlockPos, EnumFacing> pp : targets)
+				if (wayFree(new Transfer(pos, pp.getLeft(), pp.getRight(), new ItemStack(Items.CARROT))))
+					lis.add(pp);
 			switch (mode) {
 			case FF:
 				Collections.sort(lis, new Comparator<Pair<BlockPos, EnumFacing>>() {
@@ -295,8 +318,20 @@ public class TileDispatcher extends TileEntity implements ITickable {
 			case RA:
 				Collections.shuffle(lis);
 				break;
+			case RR:
+				if (lastInsertIndex + 1 >= lis.size())
+					lastInsertIndex = 0;
+				else
+					lastInsertIndex++;
+				List<Pair<BlockPos, EnumFacing>> k = Lists.newArrayList();
+				for (int i = 0; i < lis.size(); i++) {
+					k.add(lis.get((lastInsertIndex + i) % lis.size()));
+				}
+				lis = Lists.newArrayList(k);
+				break;
+			default:
+				break;
 			}
-
 			for (Pair<BlockPos, EnumFacing> pair : lis)
 				for (int i = 0; i < inv.getSlots(); i++) {
 					if (inv.getStackInSlot(i) == null || !canTransfer(inv.getStackInSlot(i)))
@@ -312,9 +347,27 @@ public class TileDispatcher extends TileEntity implements ITickable {
 					}
 					if (blocked)
 						continue;
-					int canInsert = InvHelper.canInsert(InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight()), send);
-					if (canInsert <= 0)
+					IItemHandler dest = InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight());
+					int canInsert = InvHelper.canInsert(dest, send);
+					int missing = Integer.MAX_VALUE;
+					if (inv.getStackInSlot(0) != null && stockNum > 0) {
+						int contains = 0;
+						for (int j = 0; j < dest.getSlots(); j++) {
+							if (dest.getStackInSlot(j) != null && equal(dest.getStackInSlot(j), inv.getStackInSlot(0))) {
+								contains += dest.getStackInSlot(j).stackSize;
+							}
+						}
+						for (Transfer t : transfers) {
+							if (t.rec.equals(pair) && equal(t.stack, inv.getStackInSlot(0))) {
+								contains += t.stack.stackSize;
+							}
+						}
+						missing = stockNum - contains;
+					}
+
+					if (missing <= 0 || canInsert <= 0)
 						continue;
+					canInsert = Math.min(canInsert, missing);
 					ItemStack x = inv.extractItem(i, canInsert, true);
 					if (x != null) {
 						Transfer tr = new Transfer(pos, pair.getLeft(), pair.getRight(), x);
@@ -457,6 +510,26 @@ public class TileDispatcher extends TileEntity implements ITickable {
 
 	public void setWhite(boolean white) {
 		this.white = white;
+	}
+
+	public boolean isMod() {
+		return mod;
+	}
+
+	public void setMod(boolean mod) {
+		this.mod = mod;
+	}
+
+	public int getStockNum() {
+		return stockNum;
+	}
+
+	public void setStockNum(int stockNum) {
+		this.stockNum = stockNum;
+	}
+
+	boolean throughBlocks() {
+		return upgrades.getStackInSlot(0) != null && upgrades.getStackInSlot(0).getItemDamage() >= 2;
 	}
 
 }

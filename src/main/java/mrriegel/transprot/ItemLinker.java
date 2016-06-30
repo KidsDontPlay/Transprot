@@ -42,9 +42,10 @@ public class ItemLinker extends Item {
 			if (world.provider.getDimension() == stack.getTagCompound().getInteger("dim") && world.getTileEntity(tPos) instanceof TileDispatcher) {
 				Pair<BlockPos, EnumFacing> pair = new ImmutablePair<BlockPos, EnumFacing>(pos, facing);
 				if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
-					((TileDispatcher) world.getTileEntity(tPos)).getTargets().add(pair);
+					boolean done = ((TileDispatcher) world.getTileEntity(tPos)).getTargets().add(pair);
 					((TileDispatcher) world.getTileEntity(tPos)).updateClient();
-					player.addChatMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));
+					if (done)
+						player.addChatMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));
 				} else
 					player.addChatMessage(new TextComponentString("Too far away."));
 				return EnumActionResult.SUCCESS;

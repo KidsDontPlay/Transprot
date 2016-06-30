@@ -26,8 +26,13 @@ public class CommonProxy implements IGuiHandler {
 		GameRegistry.register(new ItemBlock(Transprot.dispatcher).setRegistryName(Transprot.dispatcher.getRegistryName()));
 		GameRegistry.registerTileEntity(TileDispatcher.class, "tile_dispatcher");
 		GameRegistry.register(Transprot.linker);
+		GameRegistry.register(Transprot.upgrade);
 		GameRegistry.addShapedRecipe(new ItemStack(Transprot.dispatcher, 3), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
 		GameRegistry.addShapedRecipe(new ItemStack(Transprot.linker), "i  ", " p ", "  i", 'p', Items.PAPER, 'i', Items.IRON_INGOT);
+		GameRegistry.addShapelessRecipe(new ItemStack(Transprot.upgrade, 1, 0), Items.REDSTONE, Items.GOLD_NUGGET, Items.PAPER, Items.IRON_INGOT);
+		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 1), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 0), 'e', Items.GOLD_INGOT);
+		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 2), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 1), 'e', Items.DIAMOND);
+		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 3), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 2), 'e', Items.EMERALD);
 	}
 
 	public void init(FMLInitializationEvent event) {
@@ -40,13 +45,10 @@ public class CommonProxy implements IGuiHandler {
 	public void postInit(FMLPostInitializationEvent event) {
 		long f = Boost.defaultFrequence;
 		double t = Boost.defaultSpeed;
-		upgrades.put(Items.NETHER_STAR, new Boost((long) (f / 8.0), t * 5, 64));
-		upgrades.put(Item.getItemFromBlock(Blocks.OBSIDIAN), new Boost((long) (f * 1.5), t, 32));
-		upgrades.put(Item.getItemFromBlock(Blocks.REDSTONE_BLOCK), new Boost((long) (f / 2.0), t * 1.3, 1));
-		upgrades.put(Item.getItemFromBlock(Blocks.QUARTZ_BLOCK), new Boost((long) (f / 1.5), t, 12));
-		upgrades.put(Item.getItemFromBlock(Blocks.LAPIS_BLOCK), new Boost(f, t * 1.6, 8));
-		upgrades.put(Items.DIAMOND, new Boost((long) (f / 5.0), t * 3.5, 8));
-		upgrades.put(Items.EMERALD, new Boost((long) (f / 6.0), t * 2, 16));
+		upgrades.put(0, new Boost((long) (f / 1.5), t * 1.5, 1));
+		upgrades.put(1, new Boost((long) (f / 2.5), t * 2.0, 4));
+		upgrades.put(2, new Boost((long) (f / 5.0), t * 4.0, 16));
+		upgrades.put(3, new Boost((long) (f / 8.0), t * 5.0, 64));
 	}
 
 	@Override
