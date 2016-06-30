@@ -1,10 +1,5 @@
 package mrriegel.transprot;
 
-import java.util.Collections;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -13,22 +8,26 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class ButtonMessage implements IMessage {
 
 	int id;
+	boolean shift;
 
 	public ButtonMessage() {
 	}
 
-	public ButtonMessage(int id) {
+	public ButtonMessage(int id, boolean shift) {
 		this.id = id;
+		this.shift = shift;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		this.id = buf.readInt();
+		this.shift = buf.readBoolean();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
 		buf.writeInt(this.id);
+		buf.writeBoolean(this.shift);
 	}
 
 	public static class Handler implements IMessageHandler<ButtonMessage, IMessage> {
@@ -63,11 +62,12 @@ public class ButtonMessage implements IMessage {
 							tile.setMod(!tile.isMod());
 							break;
 						case 7:
-							if (tile.getStockNum() > 0)
-								tile.setStockNum(tile.getStockNum() - 1);
+							tile.setStockNum(tile.getStockNum() - (message.shift ? 10 : 1));
+							if (tile.getStockNum() < 0)
+								tile.setStockNum(0);
 							break;
 						case 8:
-							tile.setStockNum(tile.getStockNum() + 1);
+							tile.setStockNum(tile.getStockNum() + (message.shift ? 10 : 1));
 							break;
 						}
 					}

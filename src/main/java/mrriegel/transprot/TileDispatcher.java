@@ -11,7 +11,6 @@ import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
@@ -30,8 +29,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -350,21 +347,20 @@ public class TileDispatcher extends TileEntity implements ITickable {
 					IItemHandler dest = InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight());
 					int canInsert = InvHelper.canInsert(dest, send);
 					int missing = Integer.MAX_VALUE;
-					if (inv.getStackInSlot(0) != null && stockNum > 0) {
+					if (stockNum > 0) {
 						int contains = 0;
 						for (int j = 0; j < dest.getSlots(); j++) {
-							if (dest.getStackInSlot(j) != null && equal(dest.getStackInSlot(j), inv.getStackInSlot(0))) {
+							if (dest.getStackInSlot(j) != null && equal(dest.getStackInSlot(j), send)) {
 								contains += dest.getStackInSlot(j).stackSize;
 							}
 						}
 						for (Transfer t : transfers) {
-							if (t.rec.equals(pair) && equal(t.stack, inv.getStackInSlot(0))) {
+							if (t.rec.equals(pair) && equal(t.stack, send)) {
 								contains += t.stack.stackSize;
 							}
 						}
 						missing = stockNum - contains;
 					}
-
 					if (missing <= 0 || canInsert <= 0)
 						continue;
 					canInsert = Math.min(canInsert, missing);

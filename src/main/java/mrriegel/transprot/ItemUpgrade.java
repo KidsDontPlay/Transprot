@@ -18,17 +18,18 @@ public class ItemUpgrade extends Item {
 		this.setUnlocalizedName(getRegistryName().toString());
 		this.setCreativeTab(CreativeTabs.TRANSPORTATION);
 	}
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item item, CreativeTabs tab, List list) {
 		for (int i = 0; i < 4; i++) {
 			list.add(new ItemStack(item, 1, i));
 		}
-}
-	@Override
-	public String getUnlocalizedName(ItemStack stack) {
-		return super.getUnlocalizedName(stack)+"_"+stack.getItemDamage();
 	}
 
-	
+	@Override
+	public String getUnlocalizedName(ItemStack stack) {
+		return super.getUnlocalizedName(stack) + "_" + stack.getItemDamage();
+	}
+
 }
