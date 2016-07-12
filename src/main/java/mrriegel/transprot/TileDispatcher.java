@@ -228,6 +228,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				((EntityPlayerMP) p).connection.sendPacket(getUpdatePacket());
 			}
 		}
+		worldObj.getChunkFromBlockCoords(pos).setChunkModified();
 	}
 
 	boolean wayFree(Transfer tr) {

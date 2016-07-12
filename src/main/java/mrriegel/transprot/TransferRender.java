@@ -89,11 +89,13 @@ public class TransferRender {
 					float x = p.getX() + .5f, y = p.getY() + .5f, z = p.getZ() + .5f;
 					float x2 = t.getPos().getX() + .5f, y2 = t.getPos().getY() + .5f, z2 = t.getPos().getZ() + .5f;
 					// RenderHelper.enableStandardItemLighting();
+					boolean free = ((TileDispatcher) t).wayFree(new Transfer(t.getPos(), p, pa.getRight(), null));
 					Tessellator tessellator = Tessellator.getInstance();
 					VertexBuffer renderer = tessellator.getBuffer();
 					renderer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
 					GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
-					GL11.glLineWidth(4.5f);
+					float width=free ? 5.0f : ((float)Math.sin(6.28318530718F * (System.currentTimeMillis() * 15 & 0x3FFFL) / 0x3FFFL))+1.5f;
+					GL11.glLineWidth(width);
 					GlStateManager.pushAttrib();
 					if (player.isSneaking())
 						GL11.glDisable(GL11.GL_DEPTH_TEST);
