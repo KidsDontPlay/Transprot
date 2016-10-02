@@ -1,6 +1,7 @@
 package mrriegel.transprot;
 
 import static mrriegel.transprot.Transprot.upgrades;
+import mrriegel.limelib.network.PacketHandler;
 import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -23,9 +24,9 @@ public class CommonProxy implements IGuiHandler {
 		GameRegistry.register(Transprot.dispatcher);
 		GameRegistry.register(new ItemBlock(Transprot.dispatcher).setRegistryName(Transprot.dispatcher.getRegistryName()));
 		GameRegistry.registerTileEntity(TileDispatcher.class, "tile_dispatcher");
-		GameRegistry.register(Transprot.linker);
-		GameRegistry.register(Transprot.upgrade);
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.dispatcher, 3), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
+		Transprot.linker.registerItem();
+		Transprot.upgrade.registerItem();
+		GameRegistry.addShapedRecipe(new ItemStack(Transprot.dispatcher, 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
 		GameRegistry.addShapedRecipe(new ItemStack(Transprot.linker), "i  ", " p ", "  i", 'p', Items.PAPER, 'i', Items.IRON_INGOT);
 		GameRegistry.addShapelessRecipe(new ItemStack(Transprot.upgrade, 1, 0), Items.REDSTONE, Items.GOLD_NUGGET, Items.PAPER, Items.IRON_INGOT);
 		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 1), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 0), 'e', Items.GOLD_INGOT);
@@ -34,9 +35,7 @@ public class CommonProxy implements IGuiHandler {
 	}
 
 	public void init(FMLInitializationEvent event) {
-		int id = 0;
-		Transprot.DISPATCHER.registerMessage(ButtonMessage.Handler.class, ButtonMessage.class, id++, Side.SERVER);
-		Transprot.DISPATCHER.registerMessage(ParticleMessage.Handler.class, ParticleMessage.class, id++, Side.CLIENT);
+		PacketHandler.registerMessage(ParticleMessage.class, Side.CLIENT);
 		NetworkRegistry.INSTANCE.registerGuiHandler(Transprot.instance, this);
 	}
 

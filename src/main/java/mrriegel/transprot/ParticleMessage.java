@@ -1,61 +1,39 @@
 package mrriegel.transprot;
 
-import io.netty.buffer.ByteBuf;
-
 import java.util.Random;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.EnumParticleTypes;
+import mrriegel.limelib.helper.ParticleHelper;
+import mrriegel.limelib.network.AbstractMessage;
+import mrriegel.limelib.particle.CommonParticle;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
 
-public class ParticleMessage implements IMessage {
-
-	BlockPos pos;
-	Vec3d vec;
+public class ParticleMessage extends AbstractMessage<ParticleMessage> {
 
 	public ParticleMessage() {
+		super();
 	}
 
-	public ParticleMessage(BlockPos pos, Vec3d vec) {
-		this.pos = pos;
-		this.vec = vec;
-	}
-
-	@Override
-	public void fromBytes(ByteBuf buf) {
-		this.pos = BlockPos.fromLong(buf.readLong());
-		this.vec = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+	public ParticleMessage(NBTTagCompound nbt) {
+		super(nbt);
 	}
 
 	@Override
-	public void toBytes(ByteBuf buf) {
-		buf.writeLong(this.pos.toLong());
-		buf.writeDouble(this.vec.xCoord);
-		buf.writeDouble(this.vec.yCoord);
-		buf.writeDouble(this.vec.zCoord);
-	}
-
-	public static class Handler implements IMessageHandler<ParticleMessage, IMessage> {
-
-		@Override
-		public IMessage onMessage(final ParticleMessage message, final MessageContext ctx) {
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					double dx = message.vec.xCoord, dy = message.vec.yCoord, dz = message.vec.zCoord;
-					for (int i = 0; i < 7; i++) {
-						double xx = (new Random().nextDouble() - .5) / 2d;
-						double yy = (new Random().nextDouble() - .5) / 2d;
-						double zz = (new Random().nextDouble() - .5) / 2d;
-						Minecraft.getMinecraft().theWorld.spawnParticle(EnumParticleTypes.END_ROD, message.pos.getX() + .5 + xx, message.pos.getY() + .5 + yy, message.pos.getZ() + .5 + zz, dx, dy, dz);
-					}
-				}
-			});
-			return null;
+	public void handleMessage(EntityPlayer player, NBTTagCompound nbt, Side side) {
+		BlockPos pos = BlockPos.fromLong(nbt.getLong("pos"));
+		Vec3d vec = new Vec3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
+		double dx = vec.xCoord, dy = vec.yCoord, dz = vec.zCoord;
+		for (int i = 0; i < 7; i++) {
+			double xx = (new Random().nextDouble() - .5) / 2.3d;
+			double yy = (new Random().nextDouble() - .5) / 2.3d;
+			double zz = (new Random().nextDouble() - .5) / 2.3d;
+			ParticleHelper.renderParticle(new CommonParticle(pos.getX() + .5 + xx, pos.getY() + .5 + yy, pos.getZ() + .5 + zz, dx, dy, dz).setScale(1.2F).setTexture(ParticleHelper.squareParticle).setMaxAge2(new Random().nextInt(10) + 5));
+			// Minecraft.getMinecraft().theWorld.spawnParticle(EnumParticleTypes.END_ROD,
+			// pos.getX() + .5 + xx, pos.getY() + .5 + yy, pos.getZ() + .5 + zz,
+			// dx, dy, dz);
 		}
 	}
 

@@ -7,38 +7,31 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import mrriegel.limelib.helper.InvHelper;
+import mrriegel.limelib.helper.StackHelper;
+import mrriegel.limelib.network.PacketHandler;
+import mrriegel.limelib.tile.CommonTile;
 import mrriegel.transprot.Transprot.Boost;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
 
-public class TileDispatcher extends TileEntity implements ITickable {
+public class TileDispatcher extends CommonTile implements ITickable {
 	private Set<Transfer> transfers = Sets.newHashSet();
 	private Set<Pair<BlockPos, EnumFacing>> targets = Sets.newHashSet();
 	private Mode mode = Mode.NF;
@@ -72,7 +65,7 @@ public class TileDispatcher extends TileEntity implements ITickable {
 	}
 
 	public boolean equal(ItemStack stack1, ItemStack stack2) {
-		if (oreDict && equalOre(stack1, stack2))
+		if (oreDict && StackHelper.equalOreDict(stack1, stack2))
 			return true;
 		if (mod && stack1.getItem().getRegistryName().getResourceDomain().equals(stack2.getItem().getRegistryName().getResourceDomain()))
 			return true;
@@ -83,12 +76,10 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		return stack1.getItem() == stack2.getItem();
 	}
 
-	boolean equalOre(ItemStack stack1, ItemStack stack2) {
-		for (int i : OreDictionary.getOreIDs(stack1)) {
-			if (Ints.asList(OreDictionary.getOreIDs(stack2)).contains(i))
-				return true;
-		}
-		return false;
+	@Override
+	public boolean openGUI(EntityPlayerMP player) {
+		player.openGui(Transprot.instance, 0, worldObj, getX(), getY(), getZ());
+		return true;
 	}
 
 	@Override
@@ -197,57 +188,20 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		return super.writeToNBT(compound);
 	}
 
-	@Override
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		NBTTagCompound syncData = new NBTTagCompound();
-		this.writeToNBT(syncData);
-		return new SPacketUpdateTileEntity(this.pos, 1, syncData);
-	}
-
-	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-		readFromNBT(pkt.getNbtCompound());
-	}
-
-	@Override
-	public NBTTagCompound getUpdateTag() {
-		return writeToNBT(new NBTTagCompound());
-	}
-
-	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-		return oldState.getBlock() != newSate.getBlock();
-	}
-
-	public void updateClient() {
-		if (worldObj == null || worldObj.isRemote)
-			return;
-		WorldServer w = (WorldServer) worldObj;
-		for (EntityPlayer p : w.playerEntities) {
-			if (p.getPosition().getDistance(pos.getX(), pos.getY(), pos.getZ()) < 32) {
-				((EntityPlayerMP) p).connection.sendPacket(getUpdatePacket());
-			}
-		}
-		worldObj.getChunkFromBlockCoords(pos).setChunkModified();
-	}
-
-	boolean wayFree(Transfer tr) {
+	boolean wayFree(BlockPos start, BlockPos end) {
 		if (throughBlocks())
 			return true;
-		Vec3d p1 = new Vec3d(tr.dis);
-		p1 = p1.addVector(.5, .5, .5);
-		Vec3d p2 = new Vec3d(tr.rec.getLeft());
-		p2 = p2.addVector(.5, .5, .5);
-		Vec3d d = tr.getVec();
+		Vec3d p1 = new Vec3d(start).addVector(.5, .5, .5);
+		Vec3d p2 = new Vec3d(end).addVector(.5, .5, .5);
+		Vec3d d = new Vec3d(end.getX() - start.getX(), end.getY() - start.getY(), end.getZ() - start.getZ());
 		d = d.normalize().scale(0.25);
 		Set<BlockPos> set = Sets.newHashSet();
 		while (p1.distanceTo(p2) > 0.5) {
-			set.add(new BlockPos(MathHelper.floor_double(p1.xCoord), MathHelper.floor_double(p1.yCoord), MathHelper.floor_double(p1.zCoord)));
-			// set.add(new BlockPos(p1.xCoord, p1.yCoord, p1.zCoord));
+			set.add(new BlockPos(p1));
 			p1 = p1.add(d);
 		}
-		set.remove(tr.dis);
-		set.remove(tr.rec.getLeft());
+		set.remove(start);
+		set.remove(end);
 		for (BlockPos p : set)
 			if (!worldObj.isAirBlock(p))
 				return false;
@@ -290,8 +244,10 @@ public class TileDispatcher extends TileEntity implements ITickable {
 				return false;
 			List<Pair<BlockPos, EnumFacing>> lis = Lists.newArrayList();
 			for (Pair<BlockPos, EnumFacing> pp : targets)
-				if (wayFree(new Transfer(pos, pp.getLeft(), pp.getRight(), new ItemStack(Items.CARROT))))
+				if (wayFree(pos, pp.getLeft()))
 					lis.add(pp);
+			if (lis.isEmpty())
+				return false;
 			switch (mode) {
 			case FF:
 				Collections.sort(lis, new Comparator<Pair<BlockPos, EnumFacing>>() {
@@ -368,13 +324,19 @@ public class TileDispatcher extends TileEntity implements ITickable {
 					ItemStack x = inv.extractItem(i, canInsert, true);
 					if (x != null) {
 						Transfer tr = new Transfer(pos, pair.getLeft(), pair.getRight(), x);
-						if (!wayFree(tr))
+						if (!wayFree(tr.dis, tr.rec.getLeft()))
 							continue;
-						if (ConfigHandler.particle)
-							Transprot.DISPATCHER.sendToDimension(new ParticleMessage(pos, tr.getVec().normalize().scale(0.020)), worldObj.provider.getDimension());
+						if (ConfigHandler.particle) {
+							Vec3d vec = tr.getVec().normalize().scale(0.015);
+							NBTTagCompound nbt = new NBTTagCompound();
+							nbt.setLong("pos", pos.toLong());
+							nbt.setDouble("x", vec.xCoord);
+							nbt.setDouble("y", vec.yCoord);
+							nbt.setDouble("z", vec.zCoord);
+							PacketHandler.sendToDimension(new ParticleMessage(nbt), worldObj.provider.getDimension());
+						}
 						transfers.add(tr);
 						inv.extractItem(i, canInsert, false);
-						markDirty();
 						return true;
 					}
 				}
@@ -382,8 +344,8 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		return false;
 	}
 
-	Color getColor() {
-		return Color.getHSBColor(((pos.hashCode() * 761) % 360l) / 360f, 1, 1);
+	public Color getColor() {
+		return Color.getHSBColor((((pos.hashCode() * 761)) % 360l) / 360f, 1, 1);
 	}
 
 	@Override
@@ -391,33 +353,37 @@ public class TileDispatcher extends TileEntity implements ITickable {
 		if (worldObj.isRemote)
 			return;
 		moveItems();
-		boolean removed = false;
+		boolean needSync = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {
 			Pair<BlockPos, EnumFacing> pa = ite.next();
 			if (!InvHelper.hasItemHandler(worldObj, pa.getLeft(), pa.getRight())) {
 				ite.remove();
-				removed = true;
+				needSync = true;
 			}
 		}
-		boolean changed = false;
 		Iterator<Transfer> it = transfers.iterator();
 		while (it.hasNext()) {
 			Transfer tr = it.next();
-			if (tr.rec == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight())) {
-				InventoryHelper.spawnItemStack(worldObj, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
+			BlockPos currentPos = new BlockPos(getX() + tr.current.xCoord, getY() + tr.current.yCoord, getZ() + tr.current.zCoord);
+			if (tr.rec == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !worldObj.isAirBlock(currentPos))) {
+				// InventoryHelper.spawnItemStack(worldObj, getX() +
+				// tr.current.xCoord, getY() + tr.current.yCoord, getZ() +
+				// tr.current.zCoord, tr.stack);
+				StackHelper.spawnItemStack(worldObj, currentPos, tr.stack);
 				it.remove();
-				removed = true;
+				needSync = true;
 				continue;
 			}
-			if (tr.received() && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+			boolean received = tr.rec.getLeft().equals(currentPos);
+			if (/* tr.received() */received && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				ItemStack rest = InvHelper.insert(worldObj.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
 				if (rest != null) {
 					tr.stack = rest;
 					for (Transfer t : transfers) {
 						if (t.rec.equals(tr.rec)) {
 							if (!t.blocked)
-								changed = true;
+								needSync = true;
 							t.blocked = true;
 						}
 					}
@@ -427,14 +393,52 @@ public class TileDispatcher extends TileEntity implements ITickable {
 							t.blocked = false;
 					}
 					it.remove();
-					removed = true;
+					needSync = true;
 				}
 				worldObj.getTileEntity(tr.rec.getLeft()).markDirty();
 			}
 		}
 		boolean started = startTransfer();
-		if (removed || changed || started)
-			updateClient();
+		if (needSync || started)
+			sync();
+	}
+
+	@Override
+	public void handleMessage(EntityPlayer player, NBTTagCompound nbt) {
+		if (player.openContainer instanceof ContainerDispatcher) {
+			TileDispatcher tile = ((ContainerDispatcher) player.openContainer).tile;
+			switch (nbt.getInteger("id")) {
+			case 0:
+				tile.setMode(tile.getMode().next());
+				break;
+			case 1:
+				tile.setOreDict(!tile.isOreDict());
+				break;
+			case 2:
+				tile.setMeta(!tile.isMeta());
+				break;
+			case 3:
+				tile.setNbt(!tile.isNbt());
+				break;
+			case 4:
+				tile.setWhite(!tile.isWhite());
+				break;
+			case 5:
+				tile.getTargets().clear();
+				break;
+			case 6:
+				tile.setMod(!tile.isMod());
+				break;
+			case 7:
+				tile.setStockNum(tile.getStockNum() - (nbt.getBoolean("shift") ? 10 : 1));
+				if (tile.getStockNum() < 0)
+					tile.setStockNum(0);
+				break;
+			case 8:
+				tile.setStockNum(tile.getStockNum() + (nbt.getBoolean("shift") ? 10 : 1));
+				break;
+			}
+		}
 	}
 
 	public Set<Transfer> getTransfers() {

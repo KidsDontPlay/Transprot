@@ -1,49 +1,56 @@
 package mrriegel.transprot;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
+import mrriegel.limelib.gui.CommonContainer;
+import mrriegel.limelib.gui.slot.SlotGhost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 
-public class ContainerDispatcher extends Container {
-	private IInventory inv;
+import com.google.common.collect.Lists;
+
+public class ContainerDispatcher extends CommonContainer {
 	public TileDispatcher tile;
 
-	public ContainerDispatcher(IInventory playerInventory, TileDispatcher tile) {
+	public ContainerDispatcher(InventoryPlayer playerInventory, TileDispatcher tile) {
+		super(playerInventory, InvEntry.of("filter", tile.getInv()), InvEntry.of("upgrade", tile.getUpgrades()));
 		this.tile = tile;
-		this.inv = tile.getInv();
+	}
 
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				this.addSlotToContainer(new SlotGhost(inv, j + i * 3, 8 + j * 18, 17 + i * 18));
-			}
-		}
-		this.addSlotToContainer(new Slot(tile.getUpgrades(), 0, 151, 17) {
+	@Override
+	protected void initSlots() {
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j)
+				this.addSlotToContainer(new SlotGhost(invs.get("filter"), j + i * 3, 8 + j * 18, 17 + i * 18) {
+					@Override
+					public void onSlotChanged() {
+						super.onSlotChanged();
+						inventoryChanged();
+					}
+				});
+		this.addSlotToContainer(new Slot(invs.get("upgrade"), 0, 151, 17) {
 			@Override
 			public boolean isItemValid(ItemStack stack) {
 				return stack == null || stack.getItem() == null ? false : stack.getItem() instanceof ItemUpgrade;
 			}
-		});
-		for (int k = 0; k < 3; ++k) {
-			for (int i1 = 0; i1 < 9; ++i1) {
-				this.addSlotToContainer(new Slot(playerInventory, i1 + k * 9 + 9, 8 + i1 * 18, 84 + k * 18));
-			}
-		}
 
-		for (int l = 0; l < 9; ++l) {
-			this.addSlotToContainer(new Slot(playerInventory, l, 8 + l * 18, 142));
-		}
+			@Override
+			public void onSlotChanged() {
+				super.onSlotChanged();
+				inventoryChanged();
+			}
+		});
+		initPlayerSlots(8, 84);
 	}
 
 	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
-		return this.inv.isUseableByPlayer(playerIn);
+		return this.tile.isUseableByPlayer(playerIn);
 	}
 
 	@Override
@@ -52,21 +59,23 @@ public class ContainerDispatcher extends Container {
 	}
 
 	@Override
-	@Nullable
+	protected void inventoryChanged() {
+	}
+
+	@Override
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
 		Slot slot = this.inventorySlots.get(index);
 
 		if (slot != null && slot.getHasStack()) {
 			ItemStack itemstack1 = slot.getStack();
 
+			IInventory inv = invs.get("filter");
 			if (slot.inventory instanceof InventoryBasic) {
 				return null;
 			} else if (slot.inventory instanceof InventoryPlayer) {
 				for (int i = 0; i < inv.getSizeInventory(); i++) {
 					ItemStack s = inv.getStackInSlot(i);
 					if (s == null) {
-						// inv.setInventorySlotContents(i,
-						// ItemHandlerHelper.copyStackWithSize(itemstack1, 1));
 						getSlotFromInventory(inv, i).putStack(ItemHandlerHelper.copyStackWithSize(itemstack1, 1));
 						return null;
 					}
@@ -76,37 +85,22 @@ public class ContainerDispatcher extends Container {
 		}
 
 		return null;
+		// ItemStack s=super.transferStackInSlot(playerIn, index);
+		// detectAndSendChanges();
+		// return s;
 	}
 
-	public static class SlotGhost extends Slot {
-		public SlotGhost(IInventory inventoryIn, int index, int xPosition, int yPosition) {
-			super(inventoryIn, index, xPosition, yPosition);
-		}
-
-		@Override
-		public boolean canTakeStack(EntityPlayer playerIn) {
-			ItemStack holding = playerIn.inventory.getItemStack();
-
-			if (holding != null) {
-				holding = holding.copy();
-				holding.stackSize = 1;
-			}
-			this.putStack(holding);
-			return false;
-		}
-
-		@Override
-		public boolean isItemValid(ItemStack stack) {
-			ItemStack copy = stack.copy();
-			copy.stackSize = 1;
-			this.putStack(copy);
-			return false;
-		}
-
-		@Override
-		public ItemStack decrStackSize(int amount) {
-			this.putStack(null);
-			return null;
-		}
+	@Override
+	protected List<Area> allowedSlots(ItemStack stack, IInventory inv, int index) {
+		List<Area> lis = Lists.newArrayList();
+		// if (inv == invPlayer) {
+		// if (stack.getItem() == Transprot.upgrade) {
+		// lis.add(getAreaforEntire(invs.get("upgrade")));
+		// }
+		// lis.add(getAreaforEntire(invs.get("filter")));
+		// } else if (inv == invs.get("upgrade") || inv == invs.get("filter")) {
+		// lis.add(getAreaforEntire(invPlayer));
+		// }
+		return lis;
 	}
 }

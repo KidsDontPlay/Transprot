@@ -51,18 +51,18 @@ public class TransferRender {
 			GlStateManager.pushMatrix();
 			GlStateManager.disableLighting();
 
-			float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
-			GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
+			if (mc.gameSettings.fancyGraphics && !mc.isGamePaused()) {
+				float rotation = (float) (720.0 * ((System.currentTimeMillis() + tr.turn) & 0x3FFFL) / 0x3FFFL);
+				GlStateManager.rotate(rotation, 0.0F, 1.0F, 0);
+			}
 			GlStateManager.scale(0.5F, 0.5F, 0.5F);
 			GlStateManager.pushAttrib();
 			RenderHelper.enableStandardItemLighting();
 			itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.popAttrib();
-
 			GlStateManager.enableLighting();
 			GlStateManager.popMatrix();
-
 			GlStateManager.popMatrix();
 		}
 	}
@@ -76,7 +76,7 @@ public class TransferRender {
 		double doubleY = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.getPartialTicks();
 		double doubleZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.getPartialTicks();
 		for (TileEntity t : mc.theWorld.loadedTileEntityList)
-			if (t instanceof TileDispatcher && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 64) {
+			if (t instanceof TileDispatcher && !mc.isGamePaused() && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 64) {
 				Color color = ((TileDispatcher) t).getColor();
 				GlStateManager.pushMatrix();
 
@@ -89,20 +89,20 @@ public class TransferRender {
 					float x = p.getX() + .5f, y = p.getY() + .5f, z = p.getZ() + .5f;
 					float x2 = t.getPos().getX() + .5f, y2 = t.getPos().getY() + .5f, z2 = t.getPos().getZ() + .5f;
 					// RenderHelper.enableStandardItemLighting();
-					boolean free = ((TileDispatcher) t).wayFree(new Transfer(t.getPos(), p, pa.getRight(), null));
+					boolean free = ((TileDispatcher) t).wayFree(t.getPos(), p);
+					if (!free && mc.theWorld.getTotalWorldTime() / 10 % 2 != 0)
+						continue;
 					Tessellator tessellator = Tessellator.getInstance();
 					VertexBuffer renderer = tessellator.getBuffer();
 					renderer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
 					GlStateManager.color(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
-					float width=free ? 5.0f : ((float)Math.sin(6.28318530718F * (System.currentTimeMillis() * 15 & 0x3FFFL) / 0x3FFFL))+1.5f;
+					float width = 5.0f;
 					GL11.glLineWidth(width);
 					GlStateManager.pushAttrib();
 					if (player.isSneaking())
 						GL11.glDisable(GL11.GL_DEPTH_TEST);
-
 					renderer.pos(x, y, z).endVertex();
 					renderer.pos(x2, y2, z2).endVertex();
-
 					tessellator.draw();
 					GlStateManager.popAttrib();
 					// RenderHelper.disableStandardItemLighting();

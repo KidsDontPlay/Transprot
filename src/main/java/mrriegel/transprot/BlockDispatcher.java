@@ -1,6 +1,6 @@
 package mrriegel.transprot;
 
-import net.minecraft.block.BlockContainer;
+import mrriegel.limelib.block.CommonBlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
@@ -8,34 +8,23 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockDispatcher extends BlockContainer {
+public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 
 	public static final PropertyDirection FACING = PropertyDirection.create("facing");
 
 	public BlockDispatcher() {
-		super(Material.IRON);
+		super(Material.IRON, "dispatcher");
 		this.setHardness(1.5f);
-		this.setRegistryName("dispatcher");
-		this.setUnlocalizedName(getRegistryName().toString());
-		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.DOWN));
+		this.setDefaultState(this.getDefaultState().withProperty(FACING, EnumFacing.DOWN));
 		this.setCreativeTab(CreativeTabs.TRANSPORTATION);
-	}
-
-	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
@@ -47,7 +36,7 @@ public class BlockDispatcher extends BlockContainer {
 	public int getMetaFromState(IBlockState state) {
 		return state.getValue(FACING).getIndex();
 	}
-	
+
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return this.getDefaultState().withProperty(FACING, EnumFacing.VALUES[meta]);
@@ -93,8 +82,13 @@ public class BlockDispatcher extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 		return new TileDispatcher();
+	}
+
+	@Override
+	protected Class<? extends TileDispatcher> getTile() {
+		return TileDispatcher.class;
 	}
 
 	@Override
@@ -118,21 +112,6 @@ public class BlockDispatcher extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(final World worldIn, final BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
-		if (worldIn.isRemote) {
-			return true;
-		} else {
-			TileEntity tileentity = worldIn.getTileEntity(pos);
-
-			if (tileentity instanceof TileDispatcher) {
-				playerIn.openGui(Transprot.instance, 0, worldIn, pos.getX(), pos.getY(), pos.getZ());
-			}
-
-			return true;
-		}
-	}
-
-	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
 		TileEntity t = worldIn.getTileEntity(pos);
 		if (!worldIn.isRemote && t instanceof TileDispatcher) {
@@ -143,7 +122,6 @@ public class BlockDispatcher extends BlockContainer {
 				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
 			}
 		}
-		super.breakBlock(worldIn, pos, state);
 	}
 
 }
