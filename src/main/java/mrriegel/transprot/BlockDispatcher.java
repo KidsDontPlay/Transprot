@@ -1,24 +1,26 @@
 package mrriegel.transprot;
 
+import static net.minecraft.block.BlockDirectional.FACING;
 import mrriegel.limelib.block.CommonBlockContainer;
+import mrriegel.limelib.helper.StackHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
-
-	public static final PropertyDirection FACING = PropertyDirection.create("facing");
 
 	public BlockDispatcher() {
 		super(Material.IRON, "dispatcher");
@@ -83,6 +85,9 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
+		//		System.out.println("zap");
+		//		if (!world.isRemote)
+		//			new Exception().printStackTrace();
 		return new TileDispatcher();
 	}
 
@@ -109,6 +114,15 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 	@Override
 	public boolean isVisuallyOpaque() {
 		return false;
+	}
+
+	@Override
+	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
+		if (StackHelper.isWrench(heldItem) && !worldIn.isRemote) {
+			worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.VALUES[(state.getValue(FACING).ordinal() + 1) % 6]), 2);
+			return false;
+		}
+		return super.onBlockActivated(worldIn, pos, state, playerIn, hand, heldItem, side, hitX, hitY, hitZ);
 	}
 
 	@Override

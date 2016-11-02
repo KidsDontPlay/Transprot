@@ -1,12 +1,13 @@
 package mrriegel.transprot;
 
 import static mrriegel.transprot.Transprot.upgrades;
+import mrriegel.limelib.item.CommonItemBlock;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -22,7 +23,7 @@ public class CommonProxy implements IGuiHandler {
 	public void preInit(FMLPreInitializationEvent event) {
 		ConfigHandler.refreshConfig(event.getSuggestedConfigurationFile());
 		GameRegistry.register(Transprot.dispatcher);
-		GameRegistry.register(new ItemBlock(Transprot.dispatcher).setRegistryName(Transprot.dispatcher.getRegistryName()));
+		GameRegistry.register(new CommonItemBlock(Transprot.dispatcher));
 		GameRegistry.registerTileEntity(TileDispatcher.class, "tile_dispatcher");
 		Transprot.linker.registerItem();
 		Transprot.upgrade.registerItem();
@@ -58,6 +59,9 @@ public class CommonProxy implements IGuiHandler {
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileDispatcher tile = (TileDispatcher) world.getTileEntity(new BlockPos(x, y, z));
 		return new GuiDispatcher(player.inventory, tile);
+	}
+
+	public void spawnParticles(NBTTagCompound nbt) {
 	}
 
 }

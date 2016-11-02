@@ -12,6 +12,7 @@ import mrriegel.limelib.helper.StackHelper;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.limelib.tile.CommonTile;
 import mrriegel.transprot.Transprot.Boost;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
@@ -236,7 +237,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 
 	boolean startTransfer() {
 		if (worldObj.getTotalWorldTime() % getFrequence() == 0 && !worldObj.isBlockPowered(pos)) {
-			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDispatcher.FACING);
+			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDirectional.FACING);
 			if (!worldObj.getChunkFromBlockCoords(pos.offset(face)).isLoaded())
 				return false;
 			IItemHandler inv = InvHelper.getItemHandler(worldObj.getTileEntity(pos.offset(face)), face.getOpposite());

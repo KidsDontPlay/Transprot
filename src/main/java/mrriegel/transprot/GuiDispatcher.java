@@ -3,7 +3,7 @@ package mrriegel.transprot;
 import java.io.IOException;
 
 import mrriegel.limelib.gui.CommonGuiContainer;
-import mrriegel.limelib.gui.element.GuiButtonTooltip;
+import mrriegel.limelib.gui.button.GuiButtonTooltip;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
@@ -46,7 +46,8 @@ public class GuiDispatcher extends CommonGuiContainer {
 	}
 
 	@Override
-	protected void onUpdate() {
+	public void updateScreen() {
+		super.updateScreen();
 		if (mode != null)
 			mode.displayString = tile.getMode().toString();
 		mode.setTooltip(Lists.newArrayList(tile.getMode().text));
