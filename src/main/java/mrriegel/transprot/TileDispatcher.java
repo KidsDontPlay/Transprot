@@ -368,9 +368,6 @@ public class TileDispatcher extends CommonTile implements ITickable {
 			Transfer tr = it.next();
 			BlockPos currentPos = new BlockPos(getX() + tr.current.xCoord, getY() + tr.current.yCoord, getZ() + tr.current.zCoord);
 			if (tr.rec == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !worldObj.isAirBlock(currentPos))) {
-				// InventoryHelper.spawnItemStack(worldObj, getX() +
-				// tr.current.xCoord, getY() + tr.current.yCoord, getZ() +
-				// tr.current.zCoord, tr.stack);
 				StackHelper.spawnItemStack(worldObj, currentPos, tr.stack);
 				it.remove();
 				needSync = true;
@@ -407,36 +404,33 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	@Override
 	public void handleMessage(EntityPlayer player, NBTTagCompound nbt) {
 		if (player.openContainer instanceof ContainerDispatcher) {
-			TileDispatcher tile = ((ContainerDispatcher) player.openContainer).tile;
 			switch (nbt.getInteger("id")) {
 			case 0:
-				tile.setMode(tile.getMode().next());
+				this.mode = getMode().next();
 				break;
 			case 1:
-				tile.setOreDict(!tile.isOreDict());
+				this.oreDict ^= true;
 				break;
 			case 2:
-				tile.setMeta(!tile.isMeta());
+				this.meta ^= true;
 				break;
 			case 3:
-				tile.setNbt(!tile.isNbt());
+				this.nbt ^= true;
 				break;
 			case 4:
-				tile.setWhite(!tile.isWhite());
+				this.white ^= true;
 				break;
 			case 5:
-				tile.getTargets().clear();
+				this.targets.clear();
 				break;
 			case 6:
-				tile.setMod(!tile.isMod());
+				this.mod ^= true;
 				break;
 			case 7:
-				tile.setStockNum(tile.getStockNum() - (nbt.getBoolean("shift") ? 10 : 1));
-				if (tile.getStockNum() < 0)
-					tile.setStockNum(0);
+				this.stockNum = Math.max(0, getStockNum() - (nbt.getBoolean("shift") ? 10 : 1));
 				break;
 			case 8:
-				tile.setStockNum(tile.getStockNum() + (nbt.getBoolean("shift") ? 10 : 1));
+				this.stockNum = getStockNum() + (nbt.getBoolean("shift") ? 10 : 1);
 				break;
 			}
 		}
@@ -444,10 +438,6 @@ public class TileDispatcher extends CommonTile implements ITickable {
 
 	public Set<Transfer> getTransfers() {
 		return transfers;
-	}
-
-	public void setTransfers(Set<Transfer> transfers) {
-		this.transfers = transfers;
 	}
 
 	public Set<Pair<BlockPos, EnumFacing>> getTargets() {
@@ -458,76 +448,36 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		return mode;
 	}
 
-	public void setMode(Mode mode) {
-		this.mode = mode;
-	}
-
 	public IInventory getInv() {
 		return inv;
-	}
-
-	public void setInv(IInventory inv) {
-		this.inv = inv;
 	}
 
 	public IInventory getUpgrades() {
 		return upgrades;
 	}
 
-	public void setUpgrades(IInventory upgrades) {
-		this.upgrades = upgrades;
-	}
-
-	public void setTargets(Set<Pair<BlockPos, EnumFacing>> targets) {
-		this.targets = targets;
-	}
-
 	public boolean isOreDict() {
 		return oreDict;
-	}
-
-	public void setOreDict(boolean oreDict) {
-		this.oreDict = oreDict;
 	}
 
 	public boolean isMeta() {
 		return meta;
 	}
 
-	public void setMeta(boolean meta) {
-		this.meta = meta;
-	}
-
 	public boolean isNbt() {
 		return nbt;
-	}
-
-	public void setNbt(boolean nbt) {
-		this.nbt = nbt;
 	}
 
 	public boolean isWhite() {
 		return white;
 	}
 
-	public void setWhite(boolean white) {
-		this.white = white;
-	}
-
 	public boolean isMod() {
 		return mod;
 	}
 
-	public void setMod(boolean mod) {
-		this.mod = mod;
-	}
-
 	public int getStockNum() {
 		return stockNum;
-	}
-
-	public void setStockNum(int stockNum) {
-		this.stockNum = stockNum;
 	}
 
 	boolean throughBlocks() {

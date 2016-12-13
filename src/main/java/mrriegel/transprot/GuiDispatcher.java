@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import mrriegel.limelib.gui.CommonGuiContainer;
 import mrriegel.limelib.gui.button.GuiButtonTooltip;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -104,7 +103,7 @@ public class GuiDispatcher extends CommonGuiContainer {
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setInteger("id", button.id);
 		nbt.setBoolean("shift", isShiftKeyDown());
-		tile.handleMessage(Minecraft.getMinecraft().thePlayer, nbt);
+		tile.handleMessage(mc.thePlayer, nbt);
 		tile.sendMessage(nbt);
 	}
 }

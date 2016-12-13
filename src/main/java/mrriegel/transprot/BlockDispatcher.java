@@ -85,9 +85,6 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
-		//		System.out.println("zap");
-		//		if (!world.isRemote)
-		//			new Exception().printStackTrace();
 		return new TileDispatcher();
 	}
 
