@@ -24,7 +24,7 @@ public class Transfer {
 
 	public void readFromNBT(NBTTagCompound compound) {
 		NBTTagCompound c = compound.getCompoundTag("stack");
-		stack = ItemStack.loadItemStackFromNBT(c);
+		stack = new ItemStack(c);
 		dis = BlockPos.fromLong(compound.getLong("dis"));
 		rec = new ImmutablePair<BlockPos, EnumFacing>(BlockPos.fromLong(compound.getLong("rec")), EnumFacing.values()[compound.getInteger("face")]);
 		current = new Vec3d(compound.getDouble("xx"), compound.getDouble("yy"), compound.getDouble("zz"));

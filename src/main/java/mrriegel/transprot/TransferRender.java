@@ -29,8 +29,8 @@ public class TransferRender {
 	public void ren(RenderWorldLastEvent e) {
 		if (!ConfigHandler.itemsVisible)
 			return;
-		for (TileEntity t : mc.theWorld.loadedTileEntityList)
-			if (t instanceof TileDispatcher && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 24)
+		for (TileEntity t : mc.world.loadedTileEntityList)
+			if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 24)
 				renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
 	}
 
@@ -40,12 +40,12 @@ public class TransferRender {
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
 			double factor = Minecraft.getDebugFPS() / 20d;
-			if (!tr.blocked && !mc.isGamePaused() && mc.theWorld.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+			if (!tr.blocked && !mc.isGamePaused() && mc.world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				tr.current = tr.current.add(tr.getVec().scale((te.getSpeed() / factor) / tr.getVec().lengthVector()));
 			}
 
 			GlStateManager.translate(tr.current.xCoord, tr.current.yCoord, tr.current.zCoord);
-			EntityItem ei = new EntityItem(mc.theWorld, 0, 0, 0, tr.stack);
+			EntityItem ei = new EntityItem(mc.world, 0, 0, 0, tr.stack);
 			ei.hoverStart = 0;
 
 			GlStateManager.pushMatrix();
@@ -69,14 +69,14 @@ public class TransferRender {
 
 	@SubscribeEvent
 	public void render(RenderWorldLastEvent event) {
-		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-		if (player.inventory.getCurrentItem() == null || player.inventory.getCurrentItem().getItem() != Transprot.linker)
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player.inventory.getCurrentItem().isEmpty() || player.inventory.getCurrentItem().getItem() != Transprot.linker)
 			return;
 		double doubleX = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.getPartialTicks();
 		double doubleY = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.getPartialTicks();
 		double doubleZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.getPartialTicks();
-		for (TileEntity t : mc.theWorld.loadedTileEntityList)
-			if (t instanceof TileDispatcher && !mc.isGamePaused() && mc.thePlayer.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 64) {
+		for (TileEntity t : mc.world.loadedTileEntityList)
+			if (t instanceof TileDispatcher && !mc.isGamePaused() && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 64) {
 				Color color = ((TileDispatcher) t).getColor();
 				GlStateManager.pushMatrix();
 
@@ -90,7 +90,7 @@ public class TransferRender {
 					float x2 = t.getPos().getX() + .5f, y2 = t.getPos().getY() + .5f, z2 = t.getPos().getZ() + .5f;
 					// RenderHelper.enableStandardItemLighting();
 					boolean free = ((TileDispatcher) t).wayFree(t.getPos(), p);
-					if (!free && mc.theWorld.getTotalWorldTime() / 10 % 2 != 0)
+					if (!free && mc.world.getTotalWorldTime() / 10 % 2 != 0)
 						continue;
 					Tessellator tessellator = Tessellator.getInstance();
 					VertexBuffer renderer = tessellator.getBuffer();

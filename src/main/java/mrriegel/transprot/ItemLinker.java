@@ -25,14 +25,15 @@ public class ItemLinker extends CommonItem {
 	}
 
 	@Override
-	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (world.isRemote)
 			return EnumActionResult.PASS;
+		ItemStack stack = player.getHeldItem(hand);
 		if (player.isSneaking()) {
 			if (world.getTileEntity(pos) instanceof TileDispatcher) {
 				NBTStackHelper.setLong(stack, "pos", pos.toLong());
 				NBTStackHelper.setInt(stack, "dim", world.provider.getDimension());
-				player.addChatMessage(new TextComponentString("Bound to Dispatcher."));
+				player.sendMessage(new TextComponentString("Bound to Dispatcher."));
 				return EnumActionResult.SUCCESS;
 			}
 			if (InvHelper.hasItemHandler(world, pos, facing) && NBTHelper.hasTag(stack.getTagCompound(), "pos")) {
@@ -42,17 +43,17 @@ public class ItemLinker extends CommonItem {
 					if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
 						boolean done = ((TileDispatcher) world.getTileEntity(tPos)).getTargets().add(pair);
 						if (done) {
-							player.addChatMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));
+							player.sendMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));
 							((TileDispatcher) world.getTileEntity(tPos)).sync();
 						} else {
-							player.addChatMessage(new TextComponentString("Inventory is already connected."));
+							player.sendMessage(new TextComponentString("Inventory is already connected."));
 						}
 					} else
-						player.addChatMessage(new TextComponentString("Too far away."));
+						player.sendMessage(new TextComponentString("Too far away."));
 					return EnumActionResult.SUCCESS;
 				}
 			}
 		}
-		return super.onItemUse(stack, player, world, pos, hand, facing, hitX, hitY, hitZ);
+		return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
 	}
 }

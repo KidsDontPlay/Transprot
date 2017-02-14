@@ -1,7 +1,6 @@
 package mrriegel.transprot;
 
 import static mrriegel.transprot.Transprot.upgrades;
-import mrriegel.limelib.item.CommonItemBlock;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,9 +21,7 @@ public class CommonProxy implements IGuiHandler {
 
 	public void preInit(FMLPreInitializationEvent event) {
 		ConfigHandler.refreshConfig(event.getSuggestedConfigurationFile());
-		GameRegistry.register(Transprot.dispatcher);
-		GameRegistry.register(new CommonItemBlock(Transprot.dispatcher));
-		GameRegistry.registerTileEntity(TileDispatcher.class, "tile_dispatcher");
+		Transprot.dispatcher.registerBlock();
 		Transprot.linker.registerItem();
 		Transprot.upgrade.registerItem();
 		GameRegistry.addShapedRecipe(new ItemStack(Transprot.dispatcher, 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);

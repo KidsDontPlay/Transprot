@@ -36,7 +36,7 @@ public class ContainerDispatcher extends CommonContainer {
 		this.addSlotToContainer(new Slot(invs.get("upgrade"), 0, 151, 17) {
 			@Override
 			public boolean isItemValid(ItemStack stack) {
-				return stack == null || stack.getItem() == null ? false : stack.getItem() instanceof ItemUpgrade;
+				return stack.isEmpty() || stack.getItem() == null ? false : stack.getItem() instanceof ItemUpgrade;
 			}
 
 			@Override
@@ -50,7 +50,7 @@ public class ContainerDispatcher extends CommonContainer {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
-		return this.tile.isUseableByPlayer(playerIn);
+		return this.tile.isUsable(playerIn);
 	}
 
 	@Override

@@ -55,11 +55,11 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	}
 
 	public boolean canTransfer(ItemStack stack) {
-		if (stack == null)
+		if (stack.isEmpty())
 			return false;
 		for (int i = 0; i < inv.getSizeInventory(); i++) {
 			ItemStack s = inv.getStackInSlot(i);
-			if (s != null && equal(stack, s))
+			if (!s.isEmpty() && equal(stack, s))
 				return white;
 		}
 		return !white;
@@ -79,7 +79,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 
 	@Override
 	public boolean openGUI(EntityPlayerMP player) {
-		player.openGui(Transprot.instance, 0, worldObj, getX(), getY(), getZ());
+		player.openGui(Transprot.instance, 0, world, getX(), getY(), getZ());
 		return true;
 	}
 
@@ -107,7 +107,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 			NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
 			int j = nbttagcompound.getByte("Slot") & 255;
 			if (j >= 0 && j < inv.getSizeInventory()) {
-				inv.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+				inv.setInventorySlotContents(j, new ItemStack(nbttagcompound));
 			}
 		}
 		upgrades = new InventoryBasic(null, false, 1) {
@@ -122,7 +122,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 			NBTTagCompound nbttagcompound = nbttaglist2.getCompoundTagAt(i);
 			int j = nbttagcompound.getByte("Slot") & 255;
 			if (j >= 0 && j < upgrades.getSizeInventory()) {
-				upgrades.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+				upgrades.setInventorySlotContents(j, new ItemStack(nbttagcompound));
 			}
 		}
 		if (compound.hasKey("ore"))
@@ -153,7 +153,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		compound.setString("mode", mode.toString());
 		NBTTagList nbttaglist = new NBTTagList();
 		for (int i = 0; i < inv.getSizeInventory(); ++i) {
-			if (inv.getStackInSlot(i) != null) {
+			if (!inv.getStackInSlot(i).isEmpty()) {
 				NBTTagCompound nbttagcompound = new NBTTagCompound();
 				nbttagcompound.setByte("Slot", (byte) i);
 				inv.getStackInSlot(i).writeToNBT(nbttagcompound);
@@ -164,7 +164,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 
 		NBTTagList nbttaglist2 = new NBTTagList();
 		for (int i = 0; i < upgrades.getSizeInventory(); ++i) {
-			if (upgrades.getStackInSlot(i) != null) {
+			if (!upgrades.getStackInSlot(i).isEmpty()) {
 				NBTTagCompound nbttagcompound = new NBTTagCompound();
 				nbttagcompound.setByte("Slot", (byte) i);
 				upgrades.getStackInSlot(i).writeToNBT(nbttagcompound);
@@ -204,43 +204,43 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		set.remove(start);
 		set.remove(end);
 		for (BlockPos p : set)
-			if (!worldObj.isAirBlock(p))
+			if (!world.isAirBlock(p))
 				return false;
 		return true;
 	}
 
 	void moveItems() {
 		for (Transfer tr : getTransfers()) {
-			if (!tr.blocked && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+			if (!tr.blocked && world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				tr.current = tr.current.add(tr.getVec().scale(getSpeed() / tr.getVec().lengthVector()));
 			}
 		}
 	}
 
 	long getFrequence() {
-		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+		if (upgrades.getStackInSlot(0).isEmpty() || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
 			return Boost.defaultFrequence;
 		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).frequence;
 	}
 
 	double getSpeed() {
-		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+		if (upgrades.getStackInSlot(0).isEmpty() || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
 			return Boost.defaultSpeed;
 		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).speed;
 	}
 
 	int getStackSize() {
-		if (upgrades.getStackInSlot(0) == null || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
+		if (upgrades.getStackInSlot(0).isEmpty() || !(upgrades.getStackInSlot(0).getItem() instanceof ItemUpgrade))
 			return Boost.defaultStackSize;
 		return Transprot.upgrades.get(upgrades.getStackInSlot(0).getItemDamage()).stackSize;
 	}
 
 	boolean startTransfer() {
-		if (worldObj.getTotalWorldTime() % getFrequence() == 0 && !worldObj.isBlockPowered(pos)) {
-			EnumFacing face = worldObj.getBlockState(pos).getValue(BlockDirectional.FACING);
-			if (!worldObj.getChunkFromBlockCoords(pos.offset(face)).isLoaded())
+		if (world.getTotalWorldTime() % getFrequence() == 0 && !world.isBlockPowered(pos)) {
+			EnumFacing face = world.getBlockState(pos).getValue(BlockDirectional.FACING);
+			if (!world.getChunkFromBlockCoords(pos.offset(face)).isLoaded())
 				return false;
-			IItemHandler inv = InvHelper.getItemHandler(worldObj.getTileEntity(pos.offset(face)), face.getOpposite());
+			IItemHandler inv = InvHelper.getItemHandler(world.getTileEntity(pos.offset(face)), face.getOpposite());
 			if (inv == null)
 				return false;
 			List<Pair<BlockPos, EnumFacing>> lis = Lists.newArrayList();
@@ -289,7 +289,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 			}
 			for (Pair<BlockPos, EnumFacing> pair : lis)
 				for (int i = 0; i < inv.getSlots(); i++) {
-					if (inv.getStackInSlot(i) == null || !canTransfer(inv.getStackInSlot(i)))
+					if (inv.getStackInSlot(i).isEmpty() || !canTransfer(inv.getStackInSlot(i)))
 						continue;
 					int max = getStackSize();
 					ItemStack send = inv.extractItem(i, max, true);
@@ -302,19 +302,19 @@ public class TileDispatcher extends CommonTile implements ITickable {
 					}
 					if (blocked)
 						continue;
-					IItemHandler dest = InvHelper.getItemHandler(worldObj.getTileEntity(pair.getLeft()), pair.getRight());
+					IItemHandler dest = InvHelper.getItemHandler(world.getTileEntity(pair.getLeft()), pair.getRight());
 					int canInsert = InvHelper.canInsert(dest, send);
 					int missing = Integer.MAX_VALUE;
 					if (stockNum > 0) {
 						int contains = 0;
 						for (int j = 0; j < dest.getSlots(); j++) {
-							if (dest.getStackInSlot(j) != null && equal(dest.getStackInSlot(j), send)) {
-								contains += dest.getStackInSlot(j).stackSize;
+							if (!dest.getStackInSlot(j).isEmpty() && equal(dest.getStackInSlot(j), send)) {
+								contains += dest.getStackInSlot(j).getCount();
 							}
 						}
 						for (Transfer t : transfers) {
 							if (t.rec.equals(pair) && equal(t.stack, send)) {
-								contains += t.stack.stackSize;
+								contains += t.stack.getCount();
 							}
 						}
 						missing = stockNum - contains;
@@ -323,7 +323,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 						continue;
 					canInsert = Math.min(canInsert, missing);
 					ItemStack x = inv.extractItem(i, canInsert, true);
-					if (x != null) {
+					if (!x.isEmpty()) {
 						Transfer tr = new Transfer(pos, pair.getLeft(), pair.getRight(), x);
 						if (!wayFree(tr.dis, tr.rec.getLeft()))
 							continue;
@@ -334,7 +334,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 							nbt.setDouble("x", vec.xCoord);
 							nbt.setDouble("y", vec.yCoord);
 							nbt.setDouble("z", vec.zCoord);
-							PacketHandler.sendToDimension(new ParticleMessage(nbt), worldObj.provider.getDimension());
+							PacketHandler.sendToDimension(new ParticleMessage(nbt), world.provider.getDimension());
 						}
 						transfers.add(tr);
 						inv.extractItem(i, canInsert, false);
@@ -351,14 +351,14 @@ public class TileDispatcher extends CommonTile implements ITickable {
 
 	@Override
 	public void update() {
-		if (worldObj.isRemote)
+		if (world.isRemote)
 			return;
 		moveItems();
 		boolean needSync = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {
 			Pair<BlockPos, EnumFacing> pa = ite.next();
-			if (!InvHelper.hasItemHandler(worldObj, pa.getLeft(), pa.getRight())) {
+			if (!InvHelper.hasItemHandler(world, pa.getLeft(), pa.getRight())) {
 				ite.remove();
 				needSync = true;
 			}
@@ -367,16 +367,16 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		while (it.hasNext()) {
 			Transfer tr = it.next();
 			BlockPos currentPos = new BlockPos(getX() + tr.current.xCoord, getY() + tr.current.yCoord, getZ() + tr.current.zCoord);
-			if (tr.rec == null || !InvHelper.hasItemHandler(worldObj, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !worldObj.isAirBlock(currentPos))) {
-				StackHelper.spawnItemStack(worldObj, currentPos, tr.stack);
+			if (tr.rec == null || !InvHelper.hasItemHandler(world, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !world.isAirBlock(currentPos))) {
+				StackHelper.spawnItemStack(world, currentPos, tr.stack);
 				it.remove();
 				needSync = true;
 				continue;
 			}
 			boolean received = tr.rec.getLeft().equals(currentPos);
-			if (/* tr.received() */received && worldObj.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
-				ItemStack rest = InvHelper.insert(worldObj.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
-				if (rest != null) {
+			if (/* tr.received() */received && world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+				ItemStack rest = InvHelper.insert(world.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
+				if (!rest.isEmpty()) {
 					tr.stack = rest;
 					for (Transfer t : transfers) {
 						if (t.rec.equals(tr.rec)) {
@@ -393,7 +393,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 					it.remove();
 					needSync = true;
 				}
-				worldObj.getTileEntity(tr.rec.getLeft()).markDirty();
+				world.getTileEntity(tr.rec.getLeft()).markDirty();
 			}
 		}
 		boolean started = startTransfer();
@@ -481,7 +481,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	}
 
 	boolean throughBlocks() {
-		return upgrades.getStackInSlot(0) != null && upgrades.getStackInSlot(0).getItemDamage() >= 2;
+		return !upgrades.getStackInSlot(0).isEmpty() && upgrades.getStackInSlot(0).getItemDamage() >= 2;
 	}
 
 }

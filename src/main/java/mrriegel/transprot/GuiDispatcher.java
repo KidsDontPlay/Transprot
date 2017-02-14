@@ -12,12 +12,9 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.google.common.collect.Lists;
 
-@SideOnly(Side.CLIENT)
 public class GuiDispatcher extends CommonGuiContainer {
 	private final InventoryPlayer playerInventory;
 	private TileDispatcher tile;
@@ -103,7 +100,7 @@ public class GuiDispatcher extends CommonGuiContainer {
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setInteger("id", button.id);
 		nbt.setBoolean("shift", isShiftKeyDown());
-		tile.handleMessage(mc.thePlayer, nbt);
+		tile.handleMessage(mc.player, nbt);
 		tile.sendMessage(nbt);
 	}
 }

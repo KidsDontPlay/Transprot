@@ -2,19 +2,15 @@ package mrriegel.transprot;
 
 import static net.minecraft.block.BlockDirectional.FACING;
 import mrriegel.limelib.block.CommonBlockContainer;
-import mrriegel.limelib.helper.StackHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -30,7 +26,7 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 	}
 
 	@Override
-	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, facing.getOpposite());
 	}
 
@@ -109,26 +105,12 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 	}
 
 	@Override
-	public boolean isVisuallyOpaque() {
-		return false;
-	}
-
-	@Override
-	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
-		if (StackHelper.isWrench(heldItem) && !worldIn.isRemote) {
-			worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.VALUES[(state.getValue(FACING).ordinal() + 1) % 6]), 2);
-			return false;
-		}
-		return super.onBlockActivated(worldIn, pos, state, playerIn, hand, heldItem, side, hitX, hitY, hitZ);
-	}
-
-	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
 		TileEntity t = worldIn.getTileEntity(pos);
 		if (!worldIn.isRemote && t instanceof TileDispatcher) {
 			TileDispatcher tile = (TileDispatcher) t;
-			if (tile.getUpgrades().getStackInSlot(0) != null)
-				InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.getUpgrades().getStackInSlot(0));
+			if (!tile.getUpgrades().getStackInSlot(0).isEmpty())
+				spawnAsEntity(worldIn, pos, tile.getUpgrades().getStackInSlot(0));
 			for (Transfer tr : tile.getTransfers()) {
 				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
 			}
