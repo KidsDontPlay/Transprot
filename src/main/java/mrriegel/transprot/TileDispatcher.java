@@ -12,6 +12,7 @@ import mrriegel.limelib.helper.StackHelper;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.limelib.tile.CommonTile;
 import mrriegel.transprot.Transprot.Boost;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -368,10 +369,12 @@ public class TileDispatcher extends CommonTile implements ITickable {
 			Transfer tr = it.next();
 			BlockPos currentPos = new BlockPos(getX() + tr.current.xCoord, getY() + tr.current.yCoord, getZ() + tr.current.zCoord);
 			if (tr.rec == null || !InvHelper.hasItemHandler(world, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !world.isAirBlock(currentPos))) {
-				StackHelper.spawnItemStack(world, currentPos, tr.stack);
-				it.remove();
-				needSync = true;
-				continue;
+				if (!throughBlocks()) {
+					Block.spawnAsEntity(world, currentPos, tr.stack);
+					it.remove();
+					needSync = true;
+					continue;
+				}
 			}
 			boolean received = tr.rec.getLeft().equals(currentPos);
 			if (/* tr.received() */received && world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
