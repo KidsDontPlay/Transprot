@@ -59,6 +59,14 @@ public class TransferRender {
 			GlStateManager.pushAttrib();
 			RenderHelper.enableStandardItemLighting();
 			itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
+			if (ei.getEntityItem().getCount() > 1) {
+				GlStateManager.translate(.08, .08, .08);
+				itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
+				if (ei.getEntityItem().getCount() >= 16) {
+					GlStateManager.translate(.08, .08, .08);
+					itemRenderer.renderItem(ei.getEntityItem(), ItemCameraTransforms.TransformType.FIXED);
+				}
+			}
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.popAttrib();
 			GlStateManager.enableLighting();

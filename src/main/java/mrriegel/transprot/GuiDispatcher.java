@@ -57,8 +57,8 @@ public class GuiDispatcher extends CommonGuiContainer {
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		String s = "Dispatcher";
-		this.fontRendererObj.drawString(s, this.xSize / 2 - this.fontRendererObj.getStringWidth(s) / 2, 6, 4210752);
-		this.fontRendererObj.drawString(this.playerInventory.getDisplayName().getUnformattedText(), 8, this.ySize - 96 + 2, 4210752);
+		this.fontRenderer.drawString(s, this.xSize / 2 - this.fontRenderer.getStringWidth(s) / 2, 6, 4210752);
+		this.fontRenderer.drawString(this.playerInventory.getDisplayName().getUnformattedText(), 8, this.ySize - 96 + 2, 4210752);
 
 		RenderHelper.enableGUIStandardItemLighting();
 		if (ore != null) {
@@ -92,7 +92,7 @@ public class GuiDispatcher extends CommonGuiContainer {
 		drawer.drawPlayerSlots(7, 83);
 		drawer.drawSlots(7, 16, 3, 3);
 		drawer.drawSlot(150, 16);
-		drawString(fontRendererObj, "" + tile.getStockNum(), guiLeft + (92 - fontRendererObj.getStringWidth("" + tile.getStockNum()) / 2), guiTop + 65, 14737632);
+		drawString(fontRenderer, "" + tile.getStockNum(), guiLeft + (92 - fontRenderer.getStringWidth("" + tile.getStockNum()) / 2), guiTop + 65, 14737632);
 	}
 
 	@Override
