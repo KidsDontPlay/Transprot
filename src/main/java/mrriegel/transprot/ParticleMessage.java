@@ -5,7 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
 
-public class ParticleMessage extends AbstractMessage<ParticleMessage> {
+public class ParticleMessage extends AbstractMessage {
 
 	public ParticleMessage() {
 		super();

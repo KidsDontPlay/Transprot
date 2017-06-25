@@ -2,61 +2,34 @@ package mrriegel.transprot;
 
 import java.util.List;
 
-import mrriegel.limelib.gui.CommonContainer;
-import mrriegel.limelib.gui.slot.SlotGhost;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
-public class ContainerDispatcher extends CommonContainer {
-	public TileDispatcher tile;
+import mrriegel.limelib.gui.CommonContainerTile;
+import mrriegel.limelib.gui.slot.SlotFilter;
+import mrriegel.limelib.gui.slot.SlotGhost;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
+
+public class ContainerDispatcher extends CommonContainerTile<TileDispatcher> {
 
 	public ContainerDispatcher(InventoryPlayer playerInventory, TileDispatcher tile) {
-		super(playerInventory, Pair.<String, IInventory> of("filter", tile.getInv()), Pair.<String, IInventory> of("upgrade", tile.getUpgrades()));
-		this.tile = tile;
+		super(playerInventory, tile, Pair.<String, IInventory> of("filter", tile.getInv()), Pair.<String, IInventory> of("upgrade", tile.getUpgrades()));
 	}
 
 	@Override
 	protected void initSlots() {
-		for (int i = 0; i < 3; ++i)
-			for (int j = 0; j < 3; ++j)
-				this.addSlotToContainer(new SlotGhost(invs.get("filter"), j + i * 3, 8 + j * 18, 17 + i * 18) {
-					@Override
-					public void onSlotChanged() {
-						super.onSlotChanged();
-						inventoryChanged();
-					}
-				});
-		this.addSlotToContainer(new Slot(invs.get("upgrade"), 0, 151, 17) {
-			@Override
-			public boolean isItemValid(ItemStack stack) {
-				return stack.isEmpty() || stack.getItem() == null ? false : stack.getItem() instanceof ItemUpgrade;
-			}
-
-			@Override
-			public void onSlotChanged() {
-				super.onSlotChanged();
-				inventoryChanged();
-			}
-		});
+		initSlots((IInventory) invs.get("filter"), 8, 17, 3, 3, 0, SlotGhost.class);
+		this.addSlotToContainer(new SlotFilter(invs.get("upgrade"), 0, 151, 17, stack -> stack.isEmpty() || stack.getItem() == Transprot.upgrade));
 		initPlayerSlots(8, 84);
 	}
 
-	@Override
-	public boolean canInteractWith(EntityPlayer playerIn) {
-		return this.tile.isUsable(playerIn);
-	}
-
-	@Override
-	public boolean canMergeSlot(ItemStack stack, Slot slotIn) {
-		return false;
-	}
+	//	@Override
+	//	public boolean canMergeSlot(ItemStack stack, Slot slotIn) {
+	//		return false;
+	//	}
 
 	@Override
 	protected List<Area> allowedSlots(ItemStack stack, IInventory inv, int index) {

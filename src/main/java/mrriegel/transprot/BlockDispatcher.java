@@ -68,7 +68,6 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 			x2 = 0.5;
 			x1 = 0;
 			break;
-
 		}
 		AxisAlignedBB bb = new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
 		return bb;
@@ -112,9 +111,10 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 			if (!tile.getUpgrades().getStackInSlot(0).isEmpty())
 				spawnAsEntity(worldIn, pos, tile.getUpgrades().getStackInSlot(0));
 			for (Transfer tr : tile.getTransfers()) {
-				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.xCoord, pos.getY() + tr.current.yCoord, pos.getZ() + tr.current.zCoord, tr.stack);
+				InventoryHelper.spawnItemStack(worldIn, pos.getX() + tr.current.x, pos.getY() + tr.current.y, pos.getZ() + tr.current.z, tr.stack);
 			}
 		}
+		super.breakBlock(worldIn, pos, state);
 	}
 
 }

@@ -33,7 +33,7 @@ public class ClientProxy extends CommonProxy {
 	public void spawnParticles(NBTTagCompound nbt) {
 		BlockPos pos = BlockPos.fromLong(nbt.getLong("pos"));
 		Vec3d vec = new Vec3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
-		double dx = vec.xCoord, dy = vec.yCoord, dz = vec.zCoord;
+		double dx = vec.x, dy = vec.y, dz = vec.z;
 		for (int i = 0; i < 7; i++) {
 			double xx = (new Random().nextDouble() - .5) / 2.3d;
 			double yy = (new Random().nextDouble() - .5) / 2.3d;

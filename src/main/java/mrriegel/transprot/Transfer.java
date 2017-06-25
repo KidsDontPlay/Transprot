@@ -39,9 +39,9 @@ public class Transfer {
 		compound.setLong("dis", dis.toLong());
 		compound.setLong("rec", rec.getLeft().toLong());
 		compound.setInteger("face", rec.getRight().ordinal());
-		compound.setDouble("xx", current.xCoord);
-		compound.setDouble("yy", current.yCoord);
-		compound.setDouble("zz", current.zCoord);
+		compound.setDouble("xx", current.x);
+		compound.setDouble("yy", current.y);
+		compound.setDouble("zz", current.z);
 		compound.setBoolean("blocked", blocked);
 		compound.setInteger("turn", turn);
 		return c;

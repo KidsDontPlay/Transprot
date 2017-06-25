@@ -27,24 +27,24 @@ public class ItemLinker extends CommonItem {
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (world.isRemote)
-			return EnumActionResult.PASS;
+			return EnumActionResult.SUCCESS;
 		ItemStack stack = player.getHeldItem(hand);
 		if (player.isSneaking()) {
 			if (world.getTileEntity(pos) instanceof TileDispatcher) {
-				NBTStackHelper.setLong(stack, "pos", pos.toLong());
-				NBTStackHelper.setInt(stack, "dim", world.provider.getDimension());
+				NBTStackHelper.set(stack, "pos", pos);
+				NBTStackHelper.set(stack, "dim", world.provider.getDimension());
 				player.sendMessage(new TextComponentString("Bound to Dispatcher."));
 				return EnumActionResult.SUCCESS;
-			}
-			if (InvHelper.hasItemHandler(world, pos, facing) && NBTHelper.hasTag(stack.getTagCompound(), "pos")) {
-				BlockPos tPos = BlockPos.fromLong(stack.getTagCompound().getLong("pos"));
-				if (world.provider.getDimension() == stack.getTagCompound().getInteger("dim") && world.getTileEntity(tPos) instanceof TileDispatcher) {
+			} else if (InvHelper.hasItemHandler(world, pos, facing) && NBTHelper.hasTag(stack.getTagCompound(), "pos")) {
+				BlockPos tPos = NBTStackHelper.get(stack, "pos", BlockPos.class);
+				if (world.provider.getDimension() == NBTStackHelper.get(stack, "dim", Integer.class) && world.getTileEntity(tPos) instanceof TileDispatcher) {
+					TileDispatcher tile=(TileDispatcher) world.getTileEntity(tPos);
 					Pair<BlockPos, EnumFacing> pair = new ImmutablePair<BlockPos, EnumFacing>(pos, facing);
 					if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
-						boolean done = ((TileDispatcher) world.getTileEntity(tPos)).getTargets().add(pair);
+						boolean done = tile.getTargets().add(pair);
 						if (done) {
 							player.sendMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."));
-							((TileDispatcher) world.getTileEntity(tPos)).sync();
+							tile.sync();
 						} else {
 							player.sendMessage(new TextComponentString("Inventory is already connected."));
 						}

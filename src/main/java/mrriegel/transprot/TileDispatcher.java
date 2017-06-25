@@ -7,7 +7,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import mrriegel.limelib.helper.InvHelper;
+import mrriegel.limelib.helper.NBTHelper;
 import mrriegel.limelib.helper.StackHelper;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.limelib.tile.CommonTile;
@@ -26,12 +33,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.items.IItemHandler;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class TileDispatcher extends CommonTile implements ITickable {
 	private Set<Transfer> transfers = Sets.newHashSet();
@@ -102,40 +103,21 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		else
 			mode = Mode.NF;
 		inv = new InventoryBasic(null, false, 9);
-		NBTTagList nbttaglist = compound.getTagList("Items", 10);
-
-		for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-			NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
-			int j = nbttagcompound.getByte("Slot") & 255;
-			if (j >= 0 && j < inv.getSizeInventory()) {
-				inv.setInventorySlotContents(j, new ItemStack(nbttagcompound));
-			}
-		}
+		List<ItemStack> items = NBTHelper.getList(compound, "Items", ItemStack.class);
+		for (int i = 0; i < inv.getSizeInventory(); i++)
+			inv.setInventorySlotContents(i, items.get(i));
 		upgrades = new InventoryBasic(null, false, 1) {
 			@Override
 			public int getInventoryStackLimit() {
 				return 1;
 			}
 		};
-		NBTTagList nbttaglist2 = compound.getTagList("upgrades", 10);
-
-		for (int i = 0; i < nbttaglist2.tagCount(); ++i) {
-			NBTTagCompound nbttagcompound = nbttaglist2.getCompoundTagAt(i);
-			int j = nbttagcompound.getByte("Slot") & 255;
-			if (j >= 0 && j < upgrades.getSizeInventory()) {
-				upgrades.setInventorySlotContents(j, new ItemStack(nbttagcompound));
-			}
-		}
-		if (compound.hasKey("ore"))
-			oreDict = compound.getBoolean("ore");
-		if (compound.hasKey("meta"))
-			meta = compound.getBoolean("meta");
-		if (compound.hasKey("nbt"))
-			nbt = compound.getBoolean("nbt");
-		if (compound.hasKey("white"))
-			white = compound.getBoolean("white");
-		if (compound.hasKey("mod"))
-			mod = compound.getBoolean("mod");
+		upgrades.setInventorySlotContents(0, NBTHelper.get(compound, "upgrade", ItemStack.class));
+		oreDict = compound.getBoolean("ore");
+		meta = compound.getBoolean("meta");
+		nbt = compound.getBoolean("nbt");
+		white = compound.getBoolean("white");
+		mod = compound.getBoolean("mod");
 		lastInsertIndex = compound.getInteger("index");
 		stockNum = compound.getInteger("stock");
 		super.readFromNBT(compound);
@@ -152,27 +134,12 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		}
 		compound.setTag("lis2", lis2);
 		compound.setString("mode", mode.toString());
-		NBTTagList nbttaglist = new NBTTagList();
-		for (int i = 0; i < inv.getSizeInventory(); ++i) {
-			if (!inv.getStackInSlot(i).isEmpty()) {
-				NBTTagCompound nbttagcompound = new NBTTagCompound();
-				nbttagcompound.setByte("Slot", (byte) i);
-				inv.getStackInSlot(i).writeToNBT(nbttagcompound);
-				nbttaglist.appendTag(nbttagcompound);
-			}
-		}
-		compound.setTag("Items", nbttaglist);
+		List<ItemStack> items = Lists.newArrayList();
+		for (int i = 0; i < inv.getSizeInventory(); i++)
+			items.add(inv.getStackInSlot(i));
+		NBTHelper.setList(compound, "Items", items);
 
-		NBTTagList nbttaglist2 = new NBTTagList();
-		for (int i = 0; i < upgrades.getSizeInventory(); ++i) {
-			if (!upgrades.getStackInSlot(i).isEmpty()) {
-				NBTTagCompound nbttagcompound = new NBTTagCompound();
-				nbttagcompound.setByte("Slot", (byte) i);
-				upgrades.getStackInSlot(i).writeToNBT(nbttagcompound);
-				nbttaglist2.appendTag(nbttagcompound);
-			}
-		}
-		compound.setTag("upgrades", nbttaglist2);
+		NBTHelper.set(compound, "upgrade", upgrades.getStackInSlot(0));
 		NBTTagList lis = new NBTTagList();
 		for (Transfer t : transfers) {
 			NBTTagCompound n = new NBTTagCompound();
@@ -332,9 +299,9 @@ public class TileDispatcher extends CommonTile implements ITickable {
 							Vec3d vec = tr.getVec().normalize().scale(0.015);
 							NBTTagCompound nbt = new NBTTagCompound();
 							nbt.setLong("pos", pos.toLong());
-							nbt.setDouble("x", vec.xCoord);
-							nbt.setDouble("y", vec.yCoord);
-							nbt.setDouble("z", vec.zCoord);
+							nbt.setDouble("x", vec.x);
+							nbt.setDouble("y", vec.y);
+							nbt.setDouble("z", vec.z);
 							PacketHandler.sendToDimension(new ParticleMessage(nbt), world.provider.getDimension());
 						}
 						transfers.add(tr);
@@ -367,7 +334,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		Iterator<Transfer> it = transfers.iterator();
 		while (it.hasNext()) {
 			Transfer tr = it.next();
-			BlockPos currentPos = new BlockPos(getX() + tr.current.xCoord, getY() + tr.current.yCoord, getZ() + tr.current.zCoord);
+			BlockPos currentPos = new BlockPos(getX() + tr.current.x, getY() + tr.current.y, getZ() + tr.current.z);
 			if (tr.rec == null || !InvHelper.hasItemHandler(world, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !world.isAirBlock(currentPos))) {
 				if (!throughBlocks()) {
 					Block.spawnAsEntity(world, currentPos, tr.stack);

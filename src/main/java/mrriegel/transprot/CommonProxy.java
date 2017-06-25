@@ -1,6 +1,8 @@
 package mrriegel.transprot;
 
 import static mrriegel.transprot.Transprot.upgrades;
+
+import mrriegel.limelib.helper.RecipeHelper;
 import mrriegel.limelib.network.PacketHandler;
 import mrriegel.transprot.Transprot.Boost;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,7 +16,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class CommonProxy implements IGuiHandler {
@@ -24,12 +25,12 @@ public class CommonProxy implements IGuiHandler {
 		Transprot.dispatcher.registerBlock();
 		Transprot.linker.registerItem();
 		Transprot.upgrade.registerItem();
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.dispatcher, 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.linker), "i  ", " p ", "  i", 'p', Items.PAPER, 'i', Items.IRON_INGOT);
-		GameRegistry.addShapelessRecipe(new ItemStack(Transprot.upgrade, 1, 0), Items.REDSTONE, Items.GOLD_NUGGET, Items.PAPER, Items.IRON_INGOT);
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 1), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 0), 'e', Items.GOLD_INGOT);
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 2), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 1), 'e', Items.DIAMOND);
-		GameRegistry.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 3), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 2), 'e', Items.EMERALD);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.dispatcher, 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.linker), "i  ", " p ", "  i", 'p', Items.PAPER, 'i', Items.IRON_INGOT);
+		RecipeHelper.addShapelessRecipe(new ItemStack(Transprot.upgrade, 1, 0), Items.REDSTONE, Items.GOLD_NUGGET, Items.PAPER, Items.IRON_INGOT);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 1), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 0), 'e', Items.GOLD_INGOT);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 2), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 1), 'e', Items.DIAMOND);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 3), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 2), 'e', Items.EMERALD);
 	}
 
 	public void init(FMLInitializationEvent event) {

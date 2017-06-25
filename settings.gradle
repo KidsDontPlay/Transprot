@@ -1,2 +1,2 @@
 include ":LimeLib"
-project(":LimeLib").projectDir = file("../LimeLib")
+project(":LimeLib").projectDir = file("../LimeLib") 
