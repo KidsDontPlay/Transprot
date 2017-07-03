@@ -1,5 +1,8 @@
 package mrriegel.transprot;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import mrriegel.limelib.helper.InvHelper;
 import mrriegel.limelib.helper.NBTHelper;
 import mrriegel.limelib.helper.NBTStackHelper;
@@ -13,9 +16,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ItemLinker extends CommonItem {
 
@@ -38,7 +38,7 @@ public class ItemLinker extends CommonItem {
 			} else if (InvHelper.hasItemHandler(world, pos, facing) && NBTHelper.hasTag(stack.getTagCompound(), "pos")) {
 				BlockPos tPos = NBTStackHelper.get(stack, "pos", BlockPos.class);
 				if (world.provider.getDimension() == NBTStackHelper.get(stack, "dim", Integer.class) && world.getTileEntity(tPos) instanceof TileDispatcher) {
-					TileDispatcher tile=(TileDispatcher) world.getTileEntity(tPos);
+					TileDispatcher tile = (TileDispatcher) world.getTileEntity(tPos);
 					Pair<BlockPos, EnumFacing> pair = new ImmutablePair<BlockPos, EnumFacing>(pos, facing);
 					if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
 						boolean done = tile.getTargets().add(pair);

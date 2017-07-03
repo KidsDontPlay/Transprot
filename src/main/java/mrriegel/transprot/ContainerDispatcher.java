@@ -21,7 +21,7 @@ public class ContainerDispatcher extends CommonContainerTile<TileDispatcher> {
 
 	@Override
 	protected void initSlots() {
-		initSlots((IInventory) invs.get("filter"), 8, 17, 3, 3, 0, SlotGhost.class);
+		initSlots(invs.get("filter"), 8, 17, 3, 3, 0, SlotGhost.class);
 		this.addSlotToContainer(new SlotFilter(invs.get("upgrade"), 0, 151, 17, stack -> stack.isEmpty() || stack.getItem() == Transprot.upgrade));
 		initPlayerSlots(8, 84);
 	}

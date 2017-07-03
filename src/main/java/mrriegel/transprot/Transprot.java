@@ -2,6 +2,8 @@ package mrriegel.transprot;
 
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+
 import mrriegel.limelib.block.CommonBlock;
 import mrriegel.limelib.item.CommonItem;
 import net.minecraftforge.fml.common.Mod;
@@ -11,8 +13,6 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-
-import com.google.common.collect.Maps;
 
 @Mod(modid = Transprot.MODID, name = Transprot.MODNAME, version = Transprot.VERSION, dependencies = "required-after:limelib@[1.6.0,)")
 public class Transprot {

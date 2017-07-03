@@ -25,7 +25,7 @@ public class CommonProxy implements IGuiHandler {
 		Transprot.dispatcher.registerBlock();
 		Transprot.linker.registerItem();
 		Transprot.upgrade.registerItem();
-		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.dispatcher, 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
+		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.dispatcher.getItemBlock(), 4), "e e", " g ", "iii", 'e', Items.ENDER_PEARL, 'g', Items.GOLD_INGOT, 'i', Items.IRON_INGOT);
 		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.linker), "i  ", " p ", "  i", 'p', Items.PAPER, 'i', Items.IRON_INGOT);
 		RecipeHelper.addShapelessRecipe(new ItemStack(Transprot.upgrade, 1, 0), Items.REDSTONE, Items.GOLD_NUGGET, Items.PAPER, Items.IRON_INGOT);
 		RecipeHelper.addShapedRecipe(new ItemStack(Transprot.upgrade, 1, 1), "ueu", 'u', new ItemStack(Transprot.upgrade, 1, 0), 'e', Items.GOLD_INGOT);
