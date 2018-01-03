@@ -85,14 +85,9 @@ public class GuiDispatcher extends CommonGuiContainer {
 		RenderHelper.disableStandardItemLighting();
 
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
 		if (isPointInRegion(86, 65, 13, 13, mouseX, mouseY))
 			drawHoveringText(Lists.newArrayList("If greater than 0 destination inventory", "will keep that amount of items."), mouseX - guiLeft, mouseY - guiTop);
-	}
-
-	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		super.drawScreen(mouseX, mouseY, partialTicks);
-		renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	@Override

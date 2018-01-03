@@ -33,7 +33,7 @@ public class ItemLinker extends CommonItem {
 			if (world.getTileEntity(pos) instanceof TileDispatcher) {
 				NBTStackHelper.set(stack, "pos", pos);
 				NBTStackHelper.set(stack, "dim", world.provider.getDimension());
-				player.sendStatusMessage(new TextComponentString("Bound to Dispatcher."),true);
+				player.sendStatusMessage(new TextComponentString("Bound to Dispatcher."), true);
 				return EnumActionResult.SUCCESS;
 			} else if (InvHelper.hasItemHandler(world, pos, facing) && NBTHelper.hasTag(stack.getTagCompound(), "pos")) {
 				BlockPos tPos = NBTStackHelper.get(stack, "pos", BlockPos.class);
@@ -43,17 +43,18 @@ public class ItemLinker extends CommonItem {
 					if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
 						boolean done = tile.getTargets().add(pair);
 						if (done) {
-							player.sendStatusMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."),true);
+							player.sendStatusMessage(new TextComponentString("Added " + world.getBlockState(pos).getBlock().getLocalizedName() + "."), true);
 							tile.sync();
 						} else {
-							player.sendStatusMessage(new TextComponentString("Inventory is already connected."),true);
+							player.sendStatusMessage(new TextComponentString("Inventory is already connected."), true);
 						}
 					} else
-						player.sendStatusMessage(new TextComponentString("Too far away."),true);
+						player.sendStatusMessage(new TextComponentString("Too far away."), true);
 					return EnumActionResult.SUCCESS;
 				}
 			}
 		}
 		return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
 	}
+
 }

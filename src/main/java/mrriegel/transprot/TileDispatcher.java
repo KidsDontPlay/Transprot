@@ -28,8 +28,10 @@ import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.Packet;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.items.IItemHandler;
@@ -295,7 +297,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 						Transfer tr = new Transfer(pos, pair.getLeft(), pair.getRight(), x);
 						if (!wayFree(tr.dis, tr.rec.getLeft()))
 							continue;
-						if (ConfigHandler.particle) {
+						if (true) {
 							Vec3d vec = tr.getVec().normalize().scale(0.015);
 							NBTTagCompound nbt = new NBTTagCompound();
 							nbt.setLong("pos", pos.toLong());
@@ -369,6 +371,17 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		boolean started = startTransfer();
 		if (needSync || started)
 			sync();
+	}
+
+	@Override
+	public void sync() {
+		markDirty();
+		if (onServer())
+			for (EntityPlayerMP player : world.getEntitiesWithinAABB(EntityPlayerMP.class, new AxisAlignedBB(pos.add(-24, -24, -24), pos.add(24, 24, 24)))) {
+				Packet<?> p = getUpdatePacket();
+				if (p != null)
+					player.connection.sendPacket(p);
+			}
 	}
 
 	@Override

@@ -29,9 +29,11 @@ public class TransferRender {
 	public void ren(RenderWorldLastEvent e) {
 		if (!ConfigHandler.itemsVisible)
 			return;
-		for (TileEntity t : mc.world.loadedTileEntityList)
-			if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 24)
+		for (int i = 0; i < mc.world.loadedTileEntityList.size(); i++) {
+			TileEntity t = mc.world.loadedTileEntityList.get(i);
+			if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 32)
 				renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
+		}
 	}
 
 	public void renderTransfers(TileDispatcher te, double x, double y, double z) {
@@ -43,7 +45,6 @@ public class TransferRender {
 			if (!tr.blocked && !mc.isGamePaused() && mc.world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
 				tr.current = tr.current.add(tr.getVec().scale((te.getSpeed() / factor) / tr.getVec().lengthVector()));
 			}
-
 			GlStateManager.translate(tr.current.x, tr.current.y, tr.current.z);
 			EntityItem ei = new EntityItem(mc.world, 0, 0, 0, tr.stack);
 			ei.hoverStart = 0;

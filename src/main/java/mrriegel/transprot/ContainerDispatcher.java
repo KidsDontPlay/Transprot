@@ -26,11 +26,6 @@ public class ContainerDispatcher extends CommonContainerTile<TileDispatcher> {
 		initPlayerSlots(8, 84);
 	}
 
-	//	@Override
-	//	public boolean canMergeSlot(ItemStack stack, Slot slotIn) {
-	//		return false;
-	//	}
-
 	@Override
 	protected List<Area> allowedSlots(ItemStack stack, IInventory inv, int index) {
 		List<Area> lis = Lists.newArrayList();

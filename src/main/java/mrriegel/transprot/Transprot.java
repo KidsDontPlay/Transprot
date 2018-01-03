@@ -14,10 +14,10 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = Transprot.MODID, name = Transprot.MODNAME, version = Transprot.VERSION, dependencies = "required-after:limelib@[1.6.0,)")
+@Mod(modid = Transprot.MODID, name = Transprot.MODNAME, version = Transprot.VERSION, acceptedMinecraftVersions = "[1.12,1.13)", dependencies = "required-after:limelib@[1.6.0,)")
 public class Transprot {
 	public static final String MODID = "transprot";
-	public static final String VERSION = "1.5.0";
+	public static final String VERSION = "1.5.1";
 	public static final String MODNAME = "Transprot";
 
 	@Instance(Transprot.MODID)
