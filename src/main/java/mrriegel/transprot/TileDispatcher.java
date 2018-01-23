@@ -337,16 +337,14 @@ public class TileDispatcher extends CommonTile implements ITickable {
 		while (it.hasNext()) {
 			Transfer tr = it.next();
 			BlockPos currentPos = new BlockPos(getX() + tr.current.x, getY() + tr.current.y, getZ() + tr.current.z);
-			if (tr.rec == null || !InvHelper.hasItemHandler(world, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !world.isAirBlock(currentPos))) {
-				if (!throughBlocks()) {
-					Block.spawnAsEntity(world, currentPos, tr.stack);
-					it.remove();
-					needSync = true;
-					continue;
-				}
+			if (tr.rec == null || !InvHelper.hasItemHandler(world, tr.rec.getLeft(), tr.rec.getRight()) || (!currentPos.equals(pos) && !currentPos.equals(tr.rec.getLeft()) && !world.isAirBlock(currentPos) && !throughBlocks())) {
+				Block.spawnAsEntity(world, currentPos, tr.stack);
+				it.remove();
+				needSync = true;
+				continue;
 			}
 			boolean received = tr.rec.getLeft().equals(currentPos);
-			if (/* tr.received() */received && world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+			if (received && world.isBlockLoaded(tr.rec.getLeft())) {
 				ItemStack rest = InvHelper.insert(world.getTileEntity(tr.rec.getLeft()), tr.stack, tr.rec.getRight());
 				if (!rest.isEmpty()) {
 					tr.stack = rest;

@@ -26,13 +26,16 @@ public class TransferRender {
 	Minecraft mc = Minecraft.getMinecraft();
 
 	@SubscribeEvent
-	public void ren(RenderWorldLastEvent e) {
+	public void ren(RenderWorldLastEvent event) {
 		if (!ConfigHandler.itemsVisible)
 			return;
-		for (int i = 0; i < mc.world.loadedTileEntityList.size(); i++) {
-			TileEntity t = mc.world.loadedTileEntityList.get(i);
-			if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 32)
-				renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
+		try {
+			for (int i = 0; i < mc.world.loadedTileEntityList.size(); i++) {
+				TileEntity t = mc.world.loadedTileEntityList.get(i);
+				if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 32)
+					renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
+			}
+		} catch (IndexOutOfBoundsException e) {
 		}
 	}
 
