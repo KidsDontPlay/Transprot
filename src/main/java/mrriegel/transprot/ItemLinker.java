@@ -39,7 +39,7 @@ public class ItemLinker extends CommonItem {
 				BlockPos tPos = NBTStackHelper.get(stack, "pos", BlockPos.class);
 				if (world.provider.getDimension() == NBTStackHelper.get(stack, "dim", Integer.class) && world.getTileEntity(tPos) instanceof TileDispatcher) {
 					TileDispatcher tile = (TileDispatcher) world.getTileEntity(tPos);
-					Pair<BlockPos, EnumFacing> pair = new ImmutablePair<BlockPos, EnumFacing>(pos, facing);
+					Pair<BlockPos, EnumFacing> pair = new ImmutablePair<>(pos, facing);
 					if (pos.getDistance(tPos.getX(), tPos.getY(), tPos.getZ()) < ConfigHandler.range) {
 						boolean done = tile.getTargets().add(pair);
 						if (done) {

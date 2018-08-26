@@ -14,7 +14,7 @@ import net.minecraft.util.math.Vec3d;
 public class Transfer {
 	public BlockPos dis;
 	public Pair<BlockPos, EnumFacing> rec;
-	public Vec3d current;
+	public Vec3d current, prev;
 	public ItemStack stack;
 	public boolean blocked = false;
 	public int turn;
@@ -26,7 +26,7 @@ public class Transfer {
 		NBTTagCompound c = compound.getCompoundTag("stack");
 		stack = new ItemStack(c);
 		dis = BlockPos.fromLong(compound.getLong("dis"));
-		rec = new ImmutablePair<BlockPos, EnumFacing>(BlockPos.fromLong(compound.getLong("rec")), EnumFacing.values()[compound.getInteger("face")]);
+		rec = new ImmutablePair<>(BlockPos.fromLong(compound.getLong("rec")), EnumFacing.values()[compound.getInteger("face")]);
 		current = new Vec3d(compound.getDouble("xx"), compound.getDouble("yy"), compound.getDouble("zz"));
 		blocked = compound.getBoolean("blocked");
 		turn = compound.getInteger("turn");
@@ -49,7 +49,7 @@ public class Transfer {
 
 	public Transfer(BlockPos dis, BlockPos rec, EnumFacing face, ItemStack stack) {
 		this.dis = dis;
-		this.rec = new ImmutablePair<BlockPos, EnumFacing>(rec, face);
+		this.rec = new ImmutablePair<>(rec, face);
 		this.current = new Vec3d(.5, .5, .5);
 		this.stack = stack;
 		this.turn = new Random().nextInt();

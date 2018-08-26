@@ -70,6 +70,8 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	}
 
 	public boolean equal(ItemStack stack1, ItemStack stack2) {
+		if (stack1.isEmpty() || stack2.isEmpty())
+			return false;
 		if (oreDict && StackHelper.equalOreDict(stack1, stack2))
 			return true;
 		if (mod && stack1.getItem().getRegistryName().getResourceDomain().equals(stack2.getItem().getRegistryName().getResourceDomain()))
@@ -182,6 +184,7 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	void moveItems() {
 		for (Transfer tr : getTransfers()) {
 			if (!tr.blocked && world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
+				tr.prev = new Vec3d(tr.current.x, tr.current.y, tr.current.z);
 				tr.current = tr.current.add(tr.getVec().scale(getSpeed() / tr.getVec().lengthVector()));
 			}
 		}
@@ -316,14 +319,14 @@ public class TileDispatcher extends CommonTile implements ITickable {
 	}
 
 	public Color getColor() {
-		return Color.getHSBColor((((pos.hashCode() * 761)) % 360l) / 360f, 1, 1);
+		return Color.getHSBColor(((pos.hashCode() * 761) % 360l) / 360f, 1, 1);
 	}
 
 	@Override
 	public void update() {
+		moveItems();
 		if (world.isRemote)
 			return;
-		moveItems();
 		boolean needSync = false;
 		Iterator<Pair<BlockPos, EnumFacing>> ite = targets.iterator();
 		while (ite.hasNext()) {

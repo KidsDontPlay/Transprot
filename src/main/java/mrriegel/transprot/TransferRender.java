@@ -19,6 +19,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -33,22 +34,19 @@ public class TransferRender {
 			for (int i = 0; i < mc.world.loadedTileEntityList.size(); i++) {
 				TileEntity t = mc.world.loadedTileEntityList.get(i);
 				if (t instanceof TileDispatcher && mc.player.getDistance(t.getPos().getX(), t.getPos().getY(), t.getPos().getZ()) < 32)
-					renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ);
+					renderTransfers((TileDispatcher) t, t.getPos().getX() - TileEntityRendererDispatcher.staticPlayerX, t.getPos().getY() - TileEntityRendererDispatcher.staticPlayerY, t.getPos().getZ() - TileEntityRendererDispatcher.staticPlayerZ, event.getPartialTicks());
 			}
 		} catch (IndexOutOfBoundsException e) {
 		}
 	}
 
-	public void renderTransfers(TileDispatcher te, double x, double y, double z) {
+	public void renderTransfers(TileDispatcher te, double x, double y, double z, float partialTicks) {
 		for (Transfer tr : te.getTransfers()) {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(x, y, z);
 			RenderItem itemRenderer = mc.getRenderItem();
-			double factor = Minecraft.getDebugFPS() / 20d;
-			if (!tr.blocked && !mc.isGamePaused() && mc.world.getChunkFromBlockCoords(tr.rec.getLeft()).isLoaded()) {
-				tr.current = tr.current.add(tr.getVec().scale((te.getSpeed() / factor) / tr.getVec().lengthVector()));
-			}
-			GlStateManager.translate(tr.current.x, tr.current.y, tr.current.z);
+			Vec3d cur = tr.prev == null ? tr.current : new Vec3d(tr.prev.x + (tr.current.x - tr.prev.x) * partialTicks, tr.prev.y + (tr.current.y - tr.prev.y) * partialTicks, tr.prev.z + (tr.current.z - tr.prev.z) * partialTicks);
+			GlStateManager.translate(cur.x, cur.y, cur.z);
 			EntityItem ei = new EntityItem(mc.world, 0, 0, 0, tr.stack);
 			ei.hoverStart = 0;
 

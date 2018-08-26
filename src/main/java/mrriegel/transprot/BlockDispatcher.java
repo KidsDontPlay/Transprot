@@ -4,7 +4,6 @@ import static net.minecraft.block.BlockDirectional.FACING;
 
 import mrriegel.limelib.block.CommonBlockContainer;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -70,13 +69,12 @@ public class BlockDispatcher extends CommonBlockContainer<TileDispatcher> {
 			x1 = 0;
 			break;
 		}
-		AxisAlignedBB bb = new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
-		return bb;
+		return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
 	}
 
 	@Override
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING });
+		return new BlockStateContainer(this, FACING);
 	}
 
 	@Override
